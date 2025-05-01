@@ -7,6 +7,7 @@ import { WeldingDetails } from "./components/tables/WeldingDetails";
 import { FillerMetal } from "./components/tables/FillerMetal";
 import { ShieldingGas } from "./components/tables/ShieldingGas";
 import { FurtherInfo } from "./components/tables/FurtherInfo";
+import { SaveButton } from "./components/SaveButton";
 
 const PageWrapper = styled.div`
   min-height: 100vh;
@@ -36,6 +37,7 @@ function App() {
   return (
     <WPSProvider>
       <PageWrapper>
+        <SaveButton />
         <Container>
           <Header />
           <GeneralInfo />
