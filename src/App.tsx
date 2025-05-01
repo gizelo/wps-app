@@ -10,7 +10,6 @@ import { FurtherInfo } from "./components/tables/FurtherInfo";
 import { SaveButton } from "./components/SaveButton";
 
 const PageWrapper = styled.div`
-  min-height: 100vh;
   width: 100%;
   display: flex;
   justify-content: center;
