@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import img1 from "../assets/images/img1.jpeg";
 import img2 from "../assets/images/img2.jpeg";
+import { useWPS } from "../context/WPSContext";
 
 const Container = styled.div`
   display: grid;
@@ -32,18 +33,34 @@ const StyledImage = styled.img`
 `;
 
 export function JointDesign() {
+  const { wpsData } = useWPS();
+
   return (
     <Container>
       <Section>
         <Title>Joint design</Title>
         <ImageContainer>
-          <StyledImage src={img1} alt="Joint design diagram" />
+          {wpsData.JointDesignImage ? (
+            <StyledImage
+              src={wpsData.JointDesignImage}
+              alt="Joint design diagram"
+            />
+          ) : (
+            <StyledImage src={img1} alt="Joint design diagram" />
+          )}
         </ImageContainer>
       </Section>
       <Section>
         <Title>Weld buildup</Title>
         <ImageContainer>
-          <StyledImage src={img2} alt="Weld buildup diagram" />
+          {wpsData.WeldBuildupImage ? (
+            <StyledImage
+              src={wpsData.WeldBuildupImage}
+              alt="Weld buildup diagram"
+            />
+          ) : (
+            <StyledImage src={img2} alt="Weld buildup diagram" />
+          )}
         </ImageContainer>
       </Section>
     </Container>

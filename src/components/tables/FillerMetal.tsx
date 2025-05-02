@@ -1,33 +1,50 @@
 import { useWPS } from "../../context/WPSContext";
 import { StyledTable } from "../common/StyledTable";
-import { FillerMetal as FillerMetalType } from "../../types/wps";
 
-const headers = ["Pass from-to", "Designation", "Brand-name", "Manufacturer"];
-
-const fieldMap: Record<string, keyof FillerMetalType> = {
-  "Pass from-to": "passFromTo",
-  Designation: "designation",
-  "Brand-name": "brandName",
-  Manufacturer: "manufacturer",
-};
+const headers = [
+  "Standard",
+  "Designation",
+  "Material Number",
+  "Commercial Designation",
+  "Manufacturer",
+];
 
 export function FillerMetal() {
-  const { wpsData, updateFillerMetal } = useWPS();
+  const { wpsData, updateLayer } = useWPS();
 
-  const tableData = wpsData.fillerMetal.map((metal) => {
-    const row: Record<string, string> = {};
-    headers.forEach((header) => {
-      const field = fieldMap[header];
-      row[header] = metal[field];
-    });
-    return row;
-  });
+  const tableData = wpsData.Layers.map((layer) => ({
+    Standard: layer.FillerMetal.Standard,
+    Designation: layer.FillerMetal.Designation,
+    "Material Number": layer.FillerMetal.MaterialNumber,
+    "Commercial Designation": layer.FillerMetal.CommertialDesignation,
+    Manufacturer: layer.FillerMetal.Manufacturer,
+  }));
 
   const handleUpdate = (index: number, field: string, value: string) => {
-    const mappedField = fieldMap[field];
-    if (mappedField) {
-      updateFillerMetal(index, mappedField, value);
+    const layer = wpsData.Layers[index];
+    const updatedLayer = { ...layer };
+    const updatedFillerMetal = { ...layer.FillerMetal };
+
+    switch (field) {
+      case "Standard":
+        updatedFillerMetal.Standard = value;
+        break;
+      case "Designation":
+        updatedFillerMetal.Designation = value;
+        break;
+      case "Material Number":
+        updatedFillerMetal.MaterialNumber = value;
+        break;
+      case "Commercial Designation":
+        updatedFillerMetal.CommertialDesignation = value;
+        break;
+      case "Manufacturer":
+        updatedFillerMetal.Manufacturer = value;
+        break;
     }
+
+    updatedLayer.FillerMetal = updatedFillerMetal;
+    updateLayer(index, updatedLayer);
   };
 
   return (

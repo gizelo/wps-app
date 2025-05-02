@@ -1,68 +1,117 @@
-export interface WPSData {
-  header: {
-    wpsNr: string;
-    revision: string;
-  };
-  generalInfo: {
-    city: string;
-    examiner: string;
-    wparNumber: string;
-    welderQualification: string;
-    weldingProcess: string;
-    materialType: string;
-    customer: string;
-    supervisor: string;
-    itemNumber: string;
-    drawing: string;
-    preparationMethod: string;
-    rootPassPrep: string;
-    baseMetal1: string;
-    baseMetal2: string;
-    plateThickness: string;
-    outsideDiameter: string;
-    preheatTemp: string;
-    intermediateTemp: string;
-  };
-  remarks: string;
-  weldingDetails: WeldingDetail[];
-  fillerMetal: FillerMetal[];
-  shieldingGas: ShieldingGas[];
-  furtherInfo: FurtherInfo[];
+export interface ParentMaterial {
+  Standard: string;
+  Group: string;
+  Designation: string;
+  MaterialNumber: string;
 }
 
-export interface WeldingDetail {
-  passFromTo: string;
-  weldingPositions: string;
-  passType: string;
-  process: string;
-  fillerMetalDiameter: string;
-  weldingCurrent: string;
-  arcLengthCorrection: string;
-  weldingVoltage: string;
-  polarity: string;
-  wireFeedSpeed: string;
-  travelSpeed: string;
-  heatInput: string;
+export interface Current {
+  LowLimit: number;
+  HighLimit: number;
+}
+
+export interface Voltage {
+  LowLimit: number;
+  HighLimit: number;
+}
+
+export interface WireFeedSpeed {
+  LowLimit: number;
+  HighLimit: number;
+}
+
+export interface TravelSpeed {
+  LowLimit: number;
+  HighLimit: number;
+}
+
+export interface HeatInput {
+  LowLimit: number;
+  HighLimit: number;
 }
 
 export interface FillerMetal {
-  passFromTo: string;
-  designation: string;
-  brandName: string;
-  manufacturer: string;
+  Standard: string;
+  Designation: string;
+  MaterialNumber: string;
+  CommertialDesignation: string;
+  Manufacturer: string;
+}
+
+export interface FlowRate {
+  LowLimit: number;
+  HighLimit: number;
 }
 
 export interface ShieldingGas {
-  passFromTo: string;
-  designation: string;
-  flowRate: string;
-  preflowTime: string;
-  postflowTime: string;
+  Standard: string;
+  Symbol: string;
+  Designation: string;
+  CommertialDesignation: string;
+  Manufacturer: string;
+  FlowRate: FlowRate;
+  PreflowTime: number;
+  PostflowTime: number;
 }
 
-export interface FurtherInfo {
-  passFromTo: string;
-  parameter: string;
-  value: string;
-  weavingType: string;
+export interface TipToWorkDistance {
+  LowLimit: number;
+  HighLimit: number;
+}
+
+export interface FurtherInformation {
+  TipToWorkDistance: TipToWorkDistance;
+  WeavingType: string;
+  DropletTransfer: string;
+  GasNozzleDiameter: number;
+}
+
+export interface Layer {
+  Pass: number[];
+  Position: string;
+  PassType: string;
+  Process: string;
+  FillerDiameter: number;
+  Current: Current;
+  Voltage: Voltage;
+  Polarity: string;
+  WireFeedSpeed: WireFeedSpeed;
+  TravelSpeed: TravelSpeed;
+  HeatInput: HeatInput;
+  ArcLengthCorrection: string;
+  FillerMetal: FillerMetal;
+  ShieldingGas: ShieldingGas;
+  FurtherInformation: FurtherInformation;
+}
+
+export interface WPSData {
+  WPSNumber: string;
+  Revision: string;
+  Place: string;
+  WPQR: string;
+  WelderQualification: string;
+  WeldingProcess: string;
+  SeamType: string;
+  Customer: string;
+  Supervisor: string;
+  PartNumber: string;
+  Drawing: string;
+  Examiner: string;
+  PreparationMethod: string;
+  RootPassPreparation: string;
+  FirstParentMaterial: ParentMaterial;
+  SecondParentMaterial: ParentMaterial;
+  ParentMaterialThickness: number;
+  OutsideDiameter: number;
+  PreheatTemperature: string;
+  IntermediatePassTemperature: string;
+  JointDesignImage: string;
+  WeldBuildupImage: string;
+  Layers: Layer[];
+  CreatedBy: string;
+  CreationDate: string;
+  ApprovedBy: string;
+  ApprovalDate: string;
+  ReleasedBy: string;
+  ReleaseDate: string;
 }

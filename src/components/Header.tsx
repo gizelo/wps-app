@@ -28,7 +28,15 @@ const TitleCell = styled(StyledCell)`
 `;
 
 export function Header() {
-  const { wpsData, updateHeader } = useWPS();
+  const { wpsData, updateWPSData } = useWPS();
+
+  const handleWPSNumberChange = (value: string) => {
+    updateWPSData({ WPSNumber: value });
+  };
+
+  const handleRevisionChange = (value: string) => {
+    updateWPSData({ Revision: value });
+  };
 
   return (
     <StyledTable border={1}>
@@ -45,8 +53,8 @@ export function Header() {
                   <span>WPS-Nr:</span>
                 </div>
                 <StyledInput
-                  value={wpsData.header.wpsNr}
-                  onChange={(value) => updateHeader("wpsNr", value)}
+                  value={wpsData.WPSNumber}
+                  onChange={handleWPSNumberChange}
                 />
               </div>
               <div>
@@ -54,8 +62,8 @@ export function Header() {
                   <span>Revision:</span>
                 </div>
                 <StyledInput
-                  value={wpsData.header.revision}
-                  onChange={(value) => updateHeader("revision", value)}
+                  value={wpsData.Revision}
+                  onChange={handleRevisionChange}
                 />
               </div>
             </div>
