@@ -8,6 +8,7 @@ import { FillerMetal } from "./components/tables/FillerMetal";
 import { ShieldingGas } from "./components/tables/ShieldingGas";
 import { FurtherInfo } from "./components/tables/FurtherInfo";
 import { SaveButton } from "./components/SaveButton";
+import { SignaturesTable } from "./components/SignaturesTable";
 
 const PageWrapper = styled.div`
   width: 100%;
@@ -18,7 +19,7 @@ const PageWrapper = styled.div`
 
 const Container = styled.div`
   width: 210mm; /* A4 width */
-  height: 297mm; /* A4 height */
+  // height: 297mm; /* A4 height */
   padding: 8mm;
   background: white;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -58,6 +59,9 @@ function App() {
           <Section>
             <SectionTitle>Further information</SectionTitle>
             <FurtherInfo />
+          </Section>
+          <Section>
+            <SignaturesTable />
           </Section>
         </Container>
       </PageWrapper>
