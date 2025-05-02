@@ -27,5 +27,5 @@ const Button = styled.button`
 export function SaveButton() {
   const { saveWPSData } = useWPS();
 
-  return <Button onClick={saveWPSData}>Save WPS</Button>;
+  return <Button onClick={saveWPSData}>Download JSON</Button>;
 }

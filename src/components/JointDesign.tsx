@@ -6,25 +6,23 @@ const Container = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  margin: 16px 0;
+  margin-top: 16px;
 `;
 
-const Section = styled.div`
-  border: 1px solid #000;
-  padding: 16px;
-`;
+const Section = styled.div``;
 
 const Title = styled.div`
-  font-size: 14px;
   margin-bottom: 8px;
 `;
 
 const ImageContainer = styled.div`
-  height: 200px;
+  height: 300px;
   display: flex;
   justify-content: center;
   align-items: center;
   background: white;
+  border: 1px solid #000;
+  padding: 8px;
 `;
 
 const StyledImage = styled.img`

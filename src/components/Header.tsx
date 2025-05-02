@@ -2,44 +2,28 @@ import styled from "styled-components";
 import { useWPS } from "../context/WPSContext";
 import { StyledInput } from "./common/StyledInput";
 
-const HeaderContainer = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
-  border: 1px solid #000;
-  margin-bottom: 16px;
+const StyledTable = styled.table`
+  width: 100%;
+  border-collapse: collapse;
 `;
 
-const HeaderSection = styled.div`
-  padding: 8px;
-  border-right: 1px solid #000;
+const StyledRow = styled.tr``;
 
-  &:last-child {
-    border-right: none;
-  }
+const StyledCell = styled.td<{
+  center?: boolean;
+  right?: boolean;
+  height?: string;
+  width?: string;
+}>`
+  padding: 4px;
+  text-align: ${(props) =>
+    props.center ? "center" : props.right ? "right" : "left"};
+  height: ${(props) => props.height || "auto"};
+  width: ${(props) => props.width || "auto"};
+  padding-right: ${(props) => (props.right ? "8px" : "4px")};
 `;
 
-const Title = styled.h2`
-  text-align: center;
-  margin: 0;
-  font-size: 18px;
-  font-weight: bold;
-`;
-
-const SubTitle = styled.div`
-  text-align: center;
-  font-size: 14px;
-  margin-top: 4px;
-`;
-
-const InfoGrid = styled.div`
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 4px;
-  align-items: center;
-  margin-top: 4px;
-`;
-
-const Label = styled.span`
+const TitleCell = styled(StyledCell)`
   font-size: 14px;
 `;
 
@@ -47,28 +31,46 @@ export function Header() {
   const { wpsData, updateHeader } = useWPS();
 
   return (
-    <HeaderContainer>
-      <HeaderSection />
-      <HeaderSection>
-        <Title>Welding Procedure Specification</Title>
-        <SubTitle>Sample WPS</SubTitle>
-      </HeaderSection>
-      <HeaderSection>
-        <InfoGrid>
-          <Label>WPS-Nr:</Label>
-          <StyledInput
-            value={wpsData.header.wpsNr}
-            onChange={(value) => updateHeader("wpsNr", value)}
-          />
-          <Label>Revision:</Label>
-          <StyledInput
-            value={wpsData.header.revision}
-            onChange={(value) => updateHeader("revision", value)}
-          />
-          <Label>Page:</Label>
-          <span>1 of 2</span>
-        </InfoGrid>
-      </HeaderSection>
-    </HeaderContainer>
+    <StyledTable border={1}>
+      <tbody>
+        <StyledRow>
+          <StyledCell width="33.33%" />
+          <TitleCell center width="33.33%">
+            Welding Procedure Specification
+          </TitleCell>
+          <StyledCell width="33.33%">
+            <div style={{ display: "flex", gap: "8px" }}>
+              <div>
+                <div style={{ marginBottom: "4px" }}>
+                  <span>WPS-Nr:</span>
+                </div>
+                <StyledInput
+                  value={wpsData.header.wpsNr}
+                  onChange={(value) => updateHeader("wpsNr", value)}
+                />
+              </div>
+              <div>
+                <div style={{ marginBottom: "4px" }}>
+                  <span>Revision:</span>
+                </div>
+                <StyledInput
+                  value={wpsData.header.revision}
+                  onChange={(value) => updateHeader("revision", value)}
+                />
+              </div>
+            </div>
+          </StyledCell>
+        </StyledRow>
+        <StyledRow>
+          <StyledCell width="33.33%" />
+          <StyledCell center width="33.33%">
+            Sample WPS
+          </StyledCell>
+          <StyledCell right width="33.33%">
+            Page 1 of 2
+          </StyledCell>
+        </StyledRow>
+      </tbody>
+    </StyledTable>
   );
 }

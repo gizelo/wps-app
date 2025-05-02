@@ -7,18 +7,18 @@ const Container = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-top: 16px;
 `;
 
 const InfoGrid = styled.div`
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 8px;
+  row-gap: 4px;
+  column-gap: 16px;
   align-items: center;
 `;
 
 const Label = styled.span`
-  font-size: 14px;
   white-space: nowrap;
 `;
 

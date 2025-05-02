@@ -8,24 +8,19 @@ interface TableProps {
 }
 
 const TableContainer = styled.div`
-  margin: 16px 0;
   width: 100%;
-  overflow-x: auto;
 `;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
 `;
 
 const Th = styled.th`
   border: 1px solid #000;
   padding: 6px;
-  background: #f8f9fa;
   font-weight: normal;
   text-align: left;
-  white-space: nowrap;
 `;
 
 const Td = styled.td`

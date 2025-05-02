@@ -18,18 +18,20 @@ const PageWrapper = styled.div`
 
 const Container = styled.div`
   width: 210mm; /* A4 width */
-  padding: 20mm;
+  height: 297mm; /* A4 height */
+  padding: 8mm;
   background: white;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 `;
 
 const Section = styled.div`
-  margin: 16px 0;
+  margin-top: 16px;
 `;
 
-const SectionTitle = styled.h3`
-  font-size: 16px;
+const SectionTitle = styled.h4`
   margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: normal;
 `;
 
 function App() {

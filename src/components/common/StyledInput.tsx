@@ -20,8 +20,9 @@ const StyledInputContainer = styled.div<StyledContainerProps>`
 const Input = styled.input`
   width: 100%;
   padding: 4px 8px;
-  border: 1px solid #e4e4e4;
-  border-radius: 4px;
+  border: none;
+  background: #f2f2f2;
+  font-size: 10px;
 
   &:focus {
     outline: 1px solid #007bff;
