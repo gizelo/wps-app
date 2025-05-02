@@ -1,5 +1,7 @@
 import { useWPS } from "../../context/WPSContext";
 import { StyledTable } from "../common/StyledTable";
+import { WELDING_PROCESSES } from "../../constants/weldingProcesses";
+import { useState, useRef, useEffect } from "react";
 
 const headers = [
   "Pass",
@@ -14,6 +16,121 @@ const headers = [
   "Travel Speed [cm/min]",
   "Heat Input [kJ/cm]",
 ];
+
+function ProcessSelector({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (code: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [hovered, setHovered] = useState<string | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    if (open) {
+      document.addEventListener("mousedown", handleClick);
+      document.addEventListener("keydown", handleKey);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClick);
+      document.removeEventListener("keydown", handleKey);
+    };
+  }, [open]);
+
+  const selected = WELDING_PROCESSES.flatMap((p) => p.Subprocesses).find(
+    (sp) => sp.Code === value
+  );
+
+  return (
+    <div ref={ref} style={{ position: "relative" }}>
+      <div
+        style={{
+          cursor: "pointer",
+          padding: 4,
+          background: "#f2f2f2",
+        }}
+        onClick={() => setOpen((o) => !o)}
+      >
+        {selected ? (
+          selected.Code
+        ) : (
+          <span style={{ color: "#888" }}>Select process</span>
+        )}
+      </div>
+      {open && (
+        <div
+          style={{
+            position: "absolute",
+            zIndex: 10,
+            background: "#fff",
+            border: "1px solid #ccc",
+            minWidth: 320,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+          }}
+        >
+          {WELDING_PROCESSES.map((proc) => (
+            <div
+              key={proc.Code}
+              onMouseEnter={() => setHovered(proc.Code)}
+              onMouseLeave={() => setHovered(null)}
+              style={{
+                padding: 6,
+                background: hovered === proc.Code ? "#f0f0f0" : "#fff",
+                borderBottom: "1px solid #eee",
+                position: "relative",
+              }}
+            >
+              <span style={{ fontWeight: 500 }}>{proc.Code}</span> -{" "}
+              {proc.Description}
+              {hovered === proc.Code && (
+                <div
+                  style={{
+                    position: "absolute",
+                    left: "100%",
+                    top: 0,
+                    background: "#fff",
+                    border: "1px solid #ccc",
+                    minWidth: 260,
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                  }}
+                >
+                  {proc.Subprocesses.map((sub) => (
+                    <div
+                      key={sub.Code}
+                      style={{
+                        padding: 6,
+                        cursor: "pointer",
+                        whiteSpace: "nowrap",
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onChange(sub.Code);
+                        setOpen(false);
+                      }}
+                    >
+                      <span style={{ fontWeight: 500 }}>{sub.Code}</span> -{" "}
+                      {sub.Description}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function WeldingDetails() {
   const { wpsData, updateLayer } = useWPS();
@@ -95,7 +212,22 @@ export function WeldingDetails() {
     updateLayer(index, updatedLayer);
   };
 
+  // Custom cell renderer for Process
+  const customRenderers = {
+    Process: (value: string, rowIndex: number) => (
+      <ProcessSelector
+        value={value}
+        onChange={(code) => handleUpdate(rowIndex, "Process", code)}
+      />
+    ),
+  };
+
   return (
-    <StyledTable headers={headers} data={tableData} onUpdate={handleUpdate} />
+    <StyledTable
+      headers={headers}
+      data={tableData}
+      onUpdate={handleUpdate}
+      customRenderers={customRenderers}
+    />
   );
 }

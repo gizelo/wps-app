@@ -1,10 +1,14 @@
 import styled from "styled-components";
 import { StyledInput } from "./StyledInput";
+import React from "react";
 
 interface TableProps {
   headers: string[];
   data: Record<string, string>[];
   onUpdate: (index: number, field: string, value: string) => void;
+  customRenderers?: {
+    [column: string]: (value: string, rowIndex: number) => React.ReactNode;
+  };
 }
 
 const TableContainer = styled.div`
@@ -28,7 +32,12 @@ const Td = styled.td`
   padding: 4px;
 `;
 
-export function StyledTable({ headers, data, onUpdate }: TableProps) {
+export function StyledTable({
+  headers,
+  data,
+  onUpdate,
+  customRenderers,
+}: TableProps) {
   return (
     <TableContainer>
       <Table>
@@ -44,10 +53,14 @@ export function StyledTable({ headers, data, onUpdate }: TableProps) {
             <tr key={rowIndex}>
               {headers.map((header, colIndex) => (
                 <Td key={colIndex}>
-                  <StyledInput
-                    value={row[header] || ""}
-                    onChange={(value) => onUpdate(rowIndex, header, value)}
-                  />
+                  {customRenderers && customRenderers[header] ? (
+                    customRenderers[header](row[header], rowIndex)
+                  ) : (
+                    <StyledInput
+                      value={row[header] || ""}
+                      onChange={(value) => onUpdate(rowIndex, header, value)}
+                    />
+                  )}
                 </Td>
               ))}
             </tr>
