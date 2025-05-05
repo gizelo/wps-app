@@ -1,57 +1,22 @@
 import { useWPS } from "../../context/WPSContext";
 import { StyledTable } from "../common/StyledTable";
 import { WELDING_PROCESSES } from "../../constants/weldingProcesses";
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
+import { SelectionModal, SelectionOption } from "../common/SelectionModal";
 import styled from "styled-components";
 
-const SelectorWrapper = styled.div`
-  position: relative;
-`;
-
-const SelectorButton = styled.div<{
-  hasValue: boolean;
-}>`
+const SelectorButton = styled.div<{ hasValue: boolean }>`
   cursor: pointer;
   padding: 4px;
   background: #f2f2f2;
+  color: ${({ hasValue }) => (hasValue ? "inherit" : "#888")};
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
 
   &:hover {
-    outline: 1px solid #007bff;
+    border-color: #007bff;
+    outline: none;
   }
-
-  color: ${({ hasValue }) => (hasValue ? "inherit" : "#888")};
-`;
-
-const DropdownMenu = styled.div`
-  position: absolute;
-  z-index: 10;
-  background: #fff;
-  border: 1px solid #ccc;
-  min-width: 320px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-`;
-
-const ProcessItem = styled.div<{ hovered: boolean }>`
-  padding: 6px;
-  background: ${({ hovered }) => (hovered ? "#f0f0f0" : "#fff")};
-  border-bottom: 1px solid #eee;
-  position: relative;
-`;
-
-const SubprocessMenu = styled.div`
-  position: absolute;
-  left: 100%;
-  top: 0;
-  background: #fff;
-  border: 1px solid #ccc;
-  min-width: 260px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-`;
-
-const SubprocessItem = styled.div`
-  padding: 6px;
-  cursor: pointer;
-  white-space: nowrap;
 `;
 
 const headers = [
@@ -75,71 +40,37 @@ function ProcessSelector({
   value: string;
   onChange: (code: string) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const [hovered, setHovered] = useState<string | null>(null);
-  const ref = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
 
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    if (open) {
-      document.addEventListener("mousedown", handleClick);
-      document.addEventListener("keydown", handleKey);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClick);
-      document.removeEventListener("keydown", handleKey);
-    };
-  }, [open]);
+  const options: SelectionOption[] = WELDING_PROCESSES.map((proc) => ({
+    id: proc.Code,
+    label: proc.Code,
+    description: proc.Description,
+    children: proc.Subprocesses.map((sub) => ({
+      id: sub.Code,
+      label: sub.Code,
+      description: sub.Description,
+    })),
+  }));
 
   const selected = WELDING_PROCESSES.flatMap((p) => p.Subprocesses).find(
     (sp) => sp.Code === value
   );
 
   return (
-    <SelectorWrapper ref={ref}>
-      <SelectorButton hasValue={!!selected} onClick={() => setOpen((o) => !o)}>
-        {selected ? selected.Code : <span>Select process</span>}
+    <>
+      <SelectorButton hasValue={!!selected} onClick={() => setIsOpen(true)}>
+        {selected ? selected.Code : "Select process"}
       </SelectorButton>
-      {open && (
-        <DropdownMenu>
-          {WELDING_PROCESSES.map((proc) => (
-            <ProcessItem
-              key={proc.Code}
-              hovered={hovered === proc.Code}
-              onMouseEnter={() => setHovered(proc.Code)}
-              onMouseLeave={() => setHovered(null)}
-            >
-              <span style={{ fontWeight: 500 }}>{proc.Code}</span> -{" "}
-              {proc.Description}
-              {hovered === proc.Code && (
-                <SubprocessMenu>
-                  {proc.Subprocesses.map((sub) => (
-                    <SubprocessItem
-                      key={sub.Code}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onChange(sub.Code);
-                        setOpen(false);
-                      }}
-                    >
-                      <span style={{ fontWeight: 500 }}>{sub.Code}</span> -{" "}
-                      {sub.Description}
-                    </SubprocessItem>
-                  ))}
-                </SubprocessMenu>
-              )}
-            </ProcessItem>
-          ))}
-        </DropdownMenu>
-      )}
-    </SelectorWrapper>
+      <SelectionModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title="Process"
+        options={options}
+        selectedId={value}
+        onSelect={(option) => onChange(option.id)}
+      />
+    </>
   );
 }
 
