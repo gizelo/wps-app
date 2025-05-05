@@ -2,6 +2,57 @@ import { useWPS } from "../../context/WPSContext";
 import { StyledTable } from "../common/StyledTable";
 import { WELDING_PROCESSES } from "../../constants/weldingProcesses";
 import { useState, useRef, useEffect } from "react";
+import styled from "styled-components";
+
+const SelectorWrapper = styled.div`
+  position: relative;
+`;
+
+const SelectorButton = styled.div<{
+  hasValue: boolean;
+}>`
+  cursor: pointer;
+  padding: 4px;
+  background: #f2f2f2;
+
+  &:hover {
+    outline: 1px solid #007bff;
+  }
+
+  color: ${({ hasValue }) => (hasValue ? "inherit" : "#888")};
+`;
+
+const DropdownMenu = styled.div`
+  position: absolute;
+  z-index: 10;
+  background: #fff;
+  border: 1px solid #ccc;
+  min-width: 320px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+`;
+
+const ProcessItem = styled.div<{ hovered: boolean }>`
+  padding: 6px;
+  background: ${({ hovered }) => (hovered ? "#f0f0f0" : "#fff")};
+  border-bottom: 1px solid #eee;
+  position: relative;
+`;
+
+const SubprocessMenu = styled.div`
+  position: absolute;
+  left: 100%;
+  top: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  min-width: 260px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+`;
+
+const SubprocessItem = styled.div`
+  padding: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+`;
 
 const headers = [
   "Pass",
@@ -52,66 +103,26 @@ function ProcessSelector({
   );
 
   return (
-    <div ref={ref} style={{ position: "relative" }}>
-      <div
-        style={{
-          cursor: "pointer",
-          padding: 4,
-          background: "#f2f2f2",
-        }}
-        onClick={() => setOpen((o) => !o)}
-      >
-        {selected ? (
-          selected.Code
-        ) : (
-          <span style={{ color: "#888" }}>Select process</span>
-        )}
-      </div>
+    <SelectorWrapper ref={ref}>
+      <SelectorButton hasValue={!!selected} onClick={() => setOpen((o) => !o)}>
+        {selected ? selected.Code : <span>Select process</span>}
+      </SelectorButton>
       {open && (
-        <div
-          style={{
-            position: "absolute",
-            zIndex: 10,
-            background: "#fff",
-            border: "1px solid #ccc",
-            minWidth: 320,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-          }}
-        >
+        <DropdownMenu>
           {WELDING_PROCESSES.map((proc) => (
-            <div
+            <ProcessItem
               key={proc.Code}
+              hovered={hovered === proc.Code}
               onMouseEnter={() => setHovered(proc.Code)}
               onMouseLeave={() => setHovered(null)}
-              style={{
-                padding: 6,
-                background: hovered === proc.Code ? "#f0f0f0" : "#fff",
-                borderBottom: "1px solid #eee",
-                position: "relative",
-              }}
             >
               <span style={{ fontWeight: 500 }}>{proc.Code}</span> -{" "}
               {proc.Description}
               {hovered === proc.Code && (
-                <div
-                  style={{
-                    position: "absolute",
-                    left: "100%",
-                    top: 0,
-                    background: "#fff",
-                    border: "1px solid #ccc",
-                    minWidth: 260,
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                  }}
-                >
+                <SubprocessMenu>
                   {proc.Subprocesses.map((sub) => (
-                    <div
+                    <SubprocessItem
                       key={sub.Code}
-                      style={{
-                        padding: 6,
-                        cursor: "pointer",
-                        whiteSpace: "nowrap",
-                      }}
                       onClick={(e) => {
                         e.stopPropagation();
                         onChange(sub.Code);
@@ -120,15 +131,15 @@ function ProcessSelector({
                     >
                       <span style={{ fontWeight: 500 }}>{sub.Code}</span> -{" "}
                       {sub.Description}
-                    </div>
+                    </SubprocessItem>
                   ))}
-                </div>
+                </SubprocessMenu>
               )}
-            </div>
+            </ProcessItem>
           ))}
-        </div>
+        </DropdownMenu>
       )}
-    </div>
+    </SelectorWrapper>
   );
 }
 

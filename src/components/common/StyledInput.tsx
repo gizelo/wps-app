@@ -24,6 +24,10 @@ const Input = styled.input`
   background: #f2f2f2;
   font-size: 10px;
 
+  &:hover {
+    outline: 1px solid #007bff;
+  }
+
   &:focus {
     outline: 1px solid #007bff;
     background: #f8f9fa;

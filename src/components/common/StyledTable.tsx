@@ -24,12 +24,10 @@ const Th = styled.th`
   border: 1px solid #000;
   padding: 6px;
   font-weight: normal;
-  text-align: left;
 `;
 
 const Td = styled.td`
   border: 1px solid #000;
-  padding: 4px;
 `;
 
 export function StyledTable({
