@@ -65,7 +65,7 @@ function ProcessSelector({
       <SelectionModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        title="Process"
+        title="Select Process"
         options={options}
         selectedId={value}
         onSelect={(option) => onChange(option.id)}

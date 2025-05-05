@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { useWPS } from "../context/WPSContext";
 import { StyledInput } from "./common/StyledInput";
+import { SelectionModal, SelectionOption } from "./common/SelectionModal";
+import { METAL_GROUPS } from "../constants/metalGroups";
+import { METALS } from "../constants/metals";
 
 const Container = styled.div`
   display: grid;
@@ -22,12 +25,60 @@ const Label = styled.span`
   white-space: nowrap;
 `;
 
+const SelectorButton = styled.div<{ hasValue: boolean }>`
+  cursor: pointer;
+  padding: 4px;
+  background: #f2f2f2;
+  color: ${({ hasValue }) => (hasValue ? "inherit" : "#888")};
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #007bff;
+    outline: none;
+  }
+`;
+
+type MetalField = "FirstParentMaterial" | "SecondParentMaterial";
+
 export function GeneralInfo() {
   const { wpsData, updateWPSData } = useWPS();
+  const [isMetalModalOpen, setIsMetalModalOpen] = useState(false);
+  const [selectedMetalField, setSelectedMetalField] =
+    useState<MetalField | null>(null);
 
   const handleFieldChange = (field: keyof typeof wpsData, value: string) => {
     updateWPSData({ [field]: value } as Partial<typeof wpsData>);
   };
+
+  const handleMetalSelect = (metal: SelectionOption) => {
+    if (selectedMetalField) {
+      const metalString = `${metal.data?.GroupNumber} ${metal.data?.Standard} ${metal.data?.Designation} (${metal.data?.MaterialNumber})`;
+      handleFieldChange(selectedMetalField, metalString);
+    }
+    setIsMetalModalOpen(false);
+  };
+
+  const metalOptions: SelectionOption[] = METAL_GROUPS.map((group) => ({
+    id: group.GroupNumber,
+    label: group.GroupNumber,
+    description: group.Description,
+    children: METALS.filter(
+      (metal) => metal.GroupNumber === group.GroupNumber
+    ).map((metal) => ({
+      id: `${metal.GroupNumber} ${metal.Standard} ${metal.Designation} (${metal.MaterialNumber})`,
+      label: metal.Designation,
+      description: metal.Standard,
+      data: metal,
+    })),
+  }));
+
+  const tableColumns = [
+    { key: "Standard", label: "Standard" },
+    { key: "Designation", label: "Designation" },
+    { key: "MaterialNumber", label: "Material Number" },
+    { key: "MaterialName", label: "Material Name" },
+  ];
 
   const leftColumnFields = [
     { key: "Place", label: "Place:" },
@@ -56,34 +107,55 @@ export function GeneralInfo() {
     },
   ] as const;
 
+  const renderField = (key: keyof typeof wpsData, label: string) => {
+    if (key === "FirstParentMaterial" || key === "SecondParentMaterial") {
+      const value =
+        typeof wpsData[key] === "string" ? (wpsData[key] as string) : "";
+      return (
+        <React.Fragment key={key}>
+          <Label>{label}</Label>
+          <SelectorButton
+            hasValue={!!value}
+            onClick={() => {
+              setSelectedMetalField(key);
+              setIsMetalModalOpen(true);
+            }}
+          >
+            {value || "Select metal"}
+          </SelectorButton>
+        </React.Fragment>
+      );
+    }
+
+    return (
+      <React.Fragment key={key}>
+        <Label>{label}</Label>
+        <StyledInput
+          value={wpsData[key] as string}
+          onChange={(value) => handleFieldChange(key, value)}
+        />
+      </React.Fragment>
+    );
+  };
+
   return (
     <Container>
       <InfoGrid>
-        {leftColumnFields.map(({ key, label }) => (
-          <React.Fragment key={key}>
-            <Label>{label}</Label>
-            <StyledInput
-              value={wpsData[key] as string}
-              onChange={(value) => handleFieldChange(key, value)}
-            />
-          </React.Fragment>
-        ))}
+        {leftColumnFields.map(({ key, label }) => renderField(key, label))}
       </InfoGrid>
       <InfoGrid>
-        {rightColumnFields.map(({ key, label }) => (
-          <React.Fragment key={key}>
-            <Label>{label}</Label>
-            <StyledInput
-              value={
-                typeof wpsData[key] === "object"
-                  ? JSON.stringify(wpsData[key])
-                  : (wpsData[key] as string)
-              }
-              onChange={(value) => handleFieldChange(key, value)}
-            />
-          </React.Fragment>
-        ))}
+        {rightColumnFields.map(({ key, label }) => renderField(key, label))}
       </InfoGrid>
+
+      <SelectionModal
+        isOpen={isMetalModalOpen}
+        onClose={() => setIsMetalModalOpen(false)}
+        title="Select Metal"
+        options={metalOptions}
+        onSelect={handleMetalSelect}
+        showTable={true}
+        tableColumns={tableColumns}
+      />
     </Container>
   );
 }

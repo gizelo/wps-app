@@ -14,12 +14,12 @@ const ModalOverlay = styled.div`
   z-index: 1000;
 `;
 
-const ModalContent = styled.div`
+const ModalContent = styled.div<{ hasTable: boolean }>`
   background: white;
   padding: 20px;
   border-radius: 8px;
-  width: 500px;
-  height: 600px;
+  width: ${({ hasTable }) => (hasTable ? "90%" : "500px")};
+  height: 80vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -40,13 +40,21 @@ const SearchInput = styled.input`
   border-radius: 4px;
 `;
 
-const OptionList = styled.div`
+const ContentContainer = styled.div<{ hasTable: boolean }>`
+  display: flex;
+  gap: 20px;
+  flex: 1;
+  overflow: hidden;
+  width: ${({ hasTable }) => (hasTable ? "100%" : "auto")};
+`;
+
+const OptionList = styled.div<{ hasTable: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  flex: 1;
+  width: ${({ hasTable }) => (hasTable ? "300px" : "100%")};
   overflow-y: auto;
-  padding-bottom: 14px;
+  padding-right: ${({ hasTable }) => (hasTable ? "14px" : "0")};
 `;
 
 const OptionItem = styled.div<{ selected?: boolean; isParent?: boolean }>`
@@ -113,11 +121,46 @@ const Button = styled.button<{ primary?: boolean; disabled?: boolean }>`
   }
 `;
 
+const TableContainer = styled.div`
+  flex: 1;
+  overflow: auto;
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1.2em;
+`;
+
+const Th = styled.th`
+  padding: 8px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+  background: #f8f9fa;
+  position: sticky;
+  top: 0;
+`;
+
+const Td = styled.td`
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+`;
+
+const Tr = styled.tr<{ selected?: boolean }>`
+  cursor: pointer;
+  background: ${(props) => (props.selected ? "#e3f2fd" : "transparent")};
+
+  &:hover {
+    background: ${(props) => (props.selected ? "#e3f2fd" : "#f5f5f5")};
+  }
+`;
+
 export interface SelectionOption {
   id: string;
   label: string;
   description?: string;
   children?: SelectionOption[];
+  data?: Record<string, string | number>;
 }
 
 interface SelectionModalProps {
@@ -128,6 +171,8 @@ interface SelectionModalProps {
   selectedId?: string;
   onSelect: (option: SelectionOption) => void;
   searchable?: boolean;
+  showTable?: boolean;
+  tableColumns?: { key: string; label: string }[];
 }
 
 export function SelectionModal({
@@ -138,10 +183,15 @@ export function SelectionModal({
   selectedId,
   onSelect,
   searchable = true,
+  showTable = false,
+  tableColumns = [],
 }: SelectionModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
   const [tempSelected, setTempSelected] = useState<SelectionOption | null>(
+    null
+  );
+  const [selectedGroup, setSelectedGroup] = useState<SelectionOption | null>(
     null
   );
 
@@ -182,6 +232,23 @@ export function SelectionModal({
       // Expand the parent item if it exists
       if (parentId) {
         setExpandedItems(new Set([parentId]));
+        // Find and set the parent group
+        const findParent = (
+          opts: SelectionOption[]
+        ): SelectionOption | null => {
+          for (const opt of opts) {
+            if (opt.id === parentId) return opt;
+            if (opt.children) {
+              const found = findParent(opt.children);
+              if (found) return found;
+            }
+          }
+          return null;
+        };
+        const parent = findParent(options);
+        if (parent) {
+          setSelectedGroup(parent);
+        }
       }
     }
   }, [isOpen, selectedId, options]);
@@ -247,17 +314,24 @@ export function SelectionModal({
       .map((option) => (
         <Fragment key={option.id}>
           <OptionItem
-            selected={tempSelected?.id === option.id}
+            selected={
+              showTable
+                ? selectedGroup?.id === option.id
+                : tempSelected?.id === option.id
+            }
             isParent={!!option.children?.length}
             onClick={() => {
               if (option.children?.length) {
                 toggleExpand(option.id);
-              } else {
+                if (showTable) {
+                  setSelectedGroup(option);
+                }
+              } else if (!showTable) {
                 setTempSelected(option);
               }
             }}
           >
-            {option.children?.length && (
+            {option.children && expandedItems.has(option.id) && !showTable && (
               <ExpandIcon expanded={expandedItems.has(option.id)}>▶</ExpandIcon>
             )}
             <div>
@@ -277,7 +351,7 @@ export function SelectionModal({
               )}
             </div>
           </OptionItem>
-          {option.children && expandedItems.has(option.id) && (
+          {option.children && expandedItems.has(option.id) && !showTable && (
             <NestedOptions>
               {renderOptions(option.children, level + 1)}
             </NestedOptions>
@@ -286,9 +360,40 @@ export function SelectionModal({
       ));
   };
 
+  const renderTable = () => {
+    if (!showTable || !selectedGroup?.children) return null;
+
+    return (
+      <TableContainer>
+        <Table>
+          <thead>
+            <tr>
+              {tableColumns.map((col) => (
+                <Th key={col.key}>{col.label}</Th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {selectedGroup.children.map((item) => (
+              <Tr
+                key={item.id}
+                selected={tempSelected?.id === item.id}
+                onClick={() => setTempSelected(item)}
+              >
+                {tableColumns.map((col) => (
+                  <Td key={col.key}>{item.data?.[col.key] || ""}</Td>
+                ))}
+              </Tr>
+            ))}
+          </tbody>
+        </Table>
+      </TableContainer>
+    );
+  };
+
   return (
     <ModalOverlay onClick={onClose}>
-      <ModalContent onClick={(e) => e.stopPropagation()}>
+      <ModalContent hasTable={showTable} onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
           <h1>{title}</h1>
         </ModalHeader>
@@ -302,7 +407,10 @@ export function SelectionModal({
           />
         )}
 
-        <OptionList>{renderOptions(options)}</OptionList>
+        <ContentContainer hasTable={showTable}>
+          <OptionList hasTable={showTable}>{renderOptions(options)}</OptionList>
+          {renderTable()}
+        </ContentContainer>
 
         <ModalFooter>
           <Button onClick={onClose}>Cancel</Button>
