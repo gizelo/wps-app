@@ -43,9 +43,10 @@ const SearchInput = styled.input`
 const OptionList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   flex: 1;
   overflow-y: auto;
+  padding-bottom: 14px;
 `;
 
 const OptionItem = styled.div<{ selected?: boolean; isParent?: boolean }>`
@@ -55,7 +56,7 @@ const OptionItem = styled.div<{ selected?: boolean; isParent?: boolean }>`
   background: ${(props) => (props.selected ? "#e3f2fd" : "transparent")};
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   transition: background-color 0.2s ease;
 
   &:hover {
@@ -65,8 +66,11 @@ const OptionItem = styled.div<{ selected?: boolean; isParent?: boolean }>`
 
 const NestedOptions = styled.div`
   margin-left: 24px;
-  border-left: 2px solid #eee;
+  border-left: 2px solid #dedede;
   padding-left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 `;
 
 const ExpandIcon = styled.span<{ expanded: boolean }>`
@@ -83,8 +87,7 @@ const ModalFooter = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 20px;
-  padding-top: 20px;
+  padding-top: 14px;
   border-top: 1px solid #eee;
 `;
 
@@ -258,13 +261,19 @@ export function SelectionModal({
               <ExpandIcon expanded={expandedItems.has(option.id)}>▶</ExpandIcon>
             )}
             <div>
-              <div style={{ fontSize: "1.2em", fontWeight: 500 }}>
+              <span style={{ fontSize: "1.2em", fontWeight: "bold" }}>
                 {option.label}
-              </div>
+              </span>
               {option.description && (
-                <div style={{ fontSize: "1.2em", color: "#666" }}>
+                <span
+                  style={{
+                    fontSize: "1.2em",
+                    color: "#454545",
+                    marginLeft: "10px",
+                  }}
+                >
                   {option.description}
-                </div>
+                </span>
               )}
             </div>
           </OptionItem>
