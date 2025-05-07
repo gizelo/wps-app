@@ -14,11 +14,11 @@ const ModalOverlay = styled.div`
   z-index: 1000;
 `;
 
-const ModalContent = styled.div<{ hasTable: boolean }>`
+const ModalContent = styled.div`
   background: white;
   padding: 20px;
   border-radius: 8px;
-  width: ${({ hasTable }) => (hasTable ? "90%" : "500px")};
+  width: 90%;
   height: 80vh;
   display: flex;
   flex-direction: column;
@@ -40,31 +40,31 @@ const SearchInput = styled.input`
   border-radius: 4px;
 `;
 
-const ContentContainer = styled.div<{ hasTable: boolean }>`
+const ContentContainer = styled.div`
   display: flex;
   gap: 20px;
   flex: 1;
   overflow: hidden;
-  width: ${({ hasTable }) => (hasTable ? "100%" : "auto")};
+  width: 100%;
 `;
 
-const OptionList = styled.div<{ hasTable: boolean }>`
+const CategoryList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  width: ${({ hasTable }) => (hasTable ? "300px" : "100%")};
+  width: 300px;
   overflow-y: auto;
-  padding-right: ${({ hasTable }) => (hasTable ? "14px" : "0")};
+  padding-right: 14px;
 `;
 
-const OptionItem = styled.div<{ selected?: boolean; isParent?: boolean }>`
+const CategoryItem = styled.div<{ selected?: boolean; isParent?: boolean }>`
   padding: 10px;
   cursor: pointer;
   border-radius: 4px;
   background: ${(props) => (props.selected ? "#e3f2fd" : "transparent")};
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
   transition: background-color 0.2s ease;
 
   &:hover {
@@ -72,7 +72,7 @@ const OptionItem = styled.div<{ selected?: boolean; isParent?: boolean }>`
   }
 `;
 
-const NestedOptions = styled.div`
+const NestedCategories = styled.div`
   margin-left: 24px;
   border-left: 2px solid #dedede;
   padding-left: 8px;
@@ -83,7 +83,6 @@ const NestedOptions = styled.div`
 
 const ExpandIcon = styled.span<{ expanded: boolean }>`
   display: inline-block;
-  width: 20px;
   height: 20px;
   text-align: center;
   line-height: 20px;
@@ -155,45 +154,48 @@ const Tr = styled.tr<{ selected?: boolean }>`
   }
 `;
 
-export interface SelectionOption {
+export interface Category {
   id: string;
   label: string;
   description?: string;
-  children?: SelectionOption[];
-  data?: Record<string, string | number>;
+  children?: Category[];
+}
+
+export interface Item {
+  id: string;
+  categoryId: string;
+  [key: string]: string | number | boolean | undefined;
 }
 
 interface SelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  options: SelectionOption[];
+  categories: Category[];
+  items: Item[];
   selectedId?: string;
-  onSelect: (option: SelectionOption) => void;
+  onSelect: (item: Item) => void;
   searchable?: boolean;
-  showTable?: boolean;
-  tableColumns?: { key: string; label: string }[];
+  tableColumns: { key: string; label: string }[];
 }
 
 export function SelectionModal({
   isOpen,
   onClose,
   title,
-  options,
+  categories,
+  items,
   selectedId,
   onSelect,
   searchable = true,
-  showTable = false,
-  tableColumns = [],
+  tableColumns,
 }: SelectionModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-  const [tempSelected, setTempSelected] = useState<SelectionOption | null>(
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
     null
   );
-  const [selectedGroup, setSelectedGroup] = useState<SelectionOption | null>(
-    null
-  );
+  const [tempSelected, setTempSelected] = useState<Item | null>(null);
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -208,50 +210,57 @@ export function SelectionModal({
   }, [isOpen]);
 
   useEffect(() => {
-    if (isOpen) {
-      // Find the selected option and its parent in the nested structure
-      const findSelectedAndParent = (
-        opts: SelectionOption[],
-        parentId: string | null = null
-      ): { selected: SelectionOption | null; parentId: string | null } => {
-        for (const opt of opts) {
-          if (opt.id === selectedId) {
-            return { selected: opt, parentId };
-          }
-          if (opt.children) {
-            const found = findSelectedAndParent(opt.children, opt.id);
-            if (found.selected) return found;
-          }
-        }
-        return { selected: null, parentId: null };
-      };
-
-      const { selected, parentId } = findSelectedAndParent(options);
-      setTempSelected(selected);
-
-      // Expand the parent item if it exists
-      if (parentId) {
-        setExpandedItems(new Set([parentId]));
-        // Find and set the parent group
-        const findParent = (
-          opts: SelectionOption[]
-        ): SelectionOption | null => {
-          for (const opt of opts) {
-            if (opt.id === parentId) return opt;
-            if (opt.children) {
-              const found = findParent(opt.children);
+    if (isOpen && selectedId) {
+      const selectedItem = items.find((item) => item.id === selectedId);
+      if (selectedItem) {
+        setTempSelected(selectedItem);
+        // Find and set the parent category
+        const findCategory = (cats: Category[]): Category | null => {
+          for (const cat of cats) {
+            if (cat.id === selectedItem.categoryId) return cat;
+            if (cat.children) {
+              const found = findCategory(cat.children);
               if (found) return found;
             }
           }
           return null;
         };
-        const parent = findParent(options);
-        if (parent) {
-          setSelectedGroup(parent);
+        const category = findCategory(categories);
+        if (category) {
+          setSelectedCategory(category);
+          // Find parent category if this is a subgroup
+          const findParentCategory = (cats: Category[]): Category | null => {
+            for (const cat of cats) {
+              if (cat.children?.some((child) => child.id === category.id)) {
+                return cat;
+              }
+              if (cat.children) {
+                const found = findParentCategory(cat.children);
+                if (found) return found;
+              }
+            }
+            return null;
+          };
+          const parentCategory = findParentCategory(categories);
+          setExpandedItems(
+            new Set([
+              category.id,
+              ...(parentCategory ? [parentCategory.id] : []),
+            ])
+          );
         }
       }
     }
-  }, [isOpen, selectedId, options]);
+  }, [isOpen, selectedId, items, categories]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset selection when modal closes
+      setTempSelected(null);
+      setSelectedCategory(null);
+      setExpandedItems(new Set());
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -295,15 +304,15 @@ export function SelectionModal({
     onClose();
   };
 
-  const renderOptions = (options: SelectionOption[], level = 0) => {
-    return options
+  const renderCategories = (categories: Category[], level = 0) => {
+    return categories
       .filter(
-        (option) =>
-          option.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          option.description
+        (category) =>
+          category.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          category.description
             ?.toLowerCase()
             .includes(searchTerm.toLowerCase()) ||
-          option.children?.some(
+          category.children?.some(
             (child) =>
               child.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
               child.description
@@ -311,34 +320,29 @@ export function SelectionModal({
                 .includes(searchTerm.toLowerCase())
           )
       )
-      .map((option) => (
-        <Fragment key={option.id}>
-          <OptionItem
-            selected={
-              showTable
-                ? selectedGroup?.id === option.id
-                : tempSelected?.id === option.id
-            }
-            isParent={!!option.children?.length}
+      .map((category) => (
+        <Fragment key={category.id}>
+          <CategoryItem
+            selected={selectedCategory?.id === category.id}
+            isParent={!!category.children?.length}
             onClick={() => {
-              if (option.children?.length) {
-                toggleExpand(option.id);
-                if (showTable) {
-                  setSelectedGroup(option);
-                }
-              } else if (!showTable) {
-                setTempSelected(option);
+              if (category.children?.length) {
+                toggleExpand(category.id);
               }
+              setSelectedCategory(category);
+              setTempSelected(null);
             }}
           >
-            {option.children && expandedItems.has(option.id) && !showTable && (
-              <ExpandIcon expanded={expandedItems.has(option.id)}>▶</ExpandIcon>
+            {category.children && (
+              <ExpandIcon expanded={expandedItems.has(category.id)}>
+                ▶
+              </ExpandIcon>
             )}
             <div>
               <span style={{ fontSize: "1.2em", fontWeight: "bold" }}>
-                {option.label}
+                {category.label}
               </span>
-              {option.description && (
+              {category.description && (
                 <span
                   style={{
                     fontSize: "1.2em",
@@ -346,22 +350,26 @@ export function SelectionModal({
                     marginLeft: "10px",
                   }}
                 >
-                  {option.description}
+                  {category.description}
                 </span>
               )}
             </div>
-          </OptionItem>
-          {option.children && expandedItems.has(option.id) && !showTable && (
-            <NestedOptions>
-              {renderOptions(option.children, level + 1)}
-            </NestedOptions>
+          </CategoryItem>
+          {category.children && expandedItems.has(category.id) && (
+            <NestedCategories>
+              {renderCategories(category.children, level + 1)}
+            </NestedCategories>
           )}
         </Fragment>
       ));
   };
 
   const renderTable = () => {
-    if (!showTable || !selectedGroup?.children) return null;
+    if (!selectedCategory) return null;
+
+    const filteredItems = items.filter(
+      (item) => item.categoryId === selectedCategory.id
+    );
 
     return (
       <TableContainer>
@@ -374,14 +382,14 @@ export function SelectionModal({
             </tr>
           </thead>
           <tbody>
-            {selectedGroup.children.map((item) => (
+            {filteredItems.map((item) => (
               <Tr
                 key={item.id}
                 selected={tempSelected?.id === item.id}
                 onClick={() => setTempSelected(item)}
               >
                 {tableColumns.map((col) => (
-                  <Td key={col.key}>{item.data?.[col.key] || ""}</Td>
+                  <Td key={col.key}>{item[col.key] || ""}</Td>
                 ))}
               </Tr>
             ))}
@@ -393,7 +401,7 @@ export function SelectionModal({
 
   return (
     <ModalOverlay onClick={onClose}>
-      <ModalContent hasTable={showTable} onClick={(e) => e.stopPropagation()}>
+      <ModalContent onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
           <h1>{title}</h1>
         </ModalHeader>
@@ -407,8 +415,8 @@ export function SelectionModal({
           />
         )}
 
-        <ContentContainer hasTable={showTable}>
-          <OptionList hasTable={showTable}>{renderOptions(options)}</OptionList>
+        <ContentContainer>
+          <CategoryList>{renderCategories(categories)}</CategoryList>
           {renderTable()}
         </ContentContainer>
 

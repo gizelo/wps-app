@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { useWPS } from "../context/WPSContext";
 import { StyledInput } from "./common/StyledInput";
-import { SelectionModal, SelectionOption } from "./common/SelectionModal";
+import { SelectionModal, Category, Item } from "./common/SelectionModal";
 import { METAL_GROUPS } from "../constants/metalGroups";
 import { METALS } from "../constants/metals";
 
@@ -51,26 +51,37 @@ export function GeneralInfo() {
     updateWPSData({ [field]: value } as Partial<typeof wpsData>);
   };
 
-  const handleMetalSelect = (metal: SelectionOption) => {
+  const handleMetalSelect = (metal: Item) => {
     if (selectedMetalField) {
-      const metalString = `${metal.data?.GroupNumber} ${metal.data?.Standard} ${metal.data?.Designation} (${metal.data?.MaterialNumber})`;
+      const metalString = `${metal.GroupNumber} ${metal.Standard} ${metal.Designation} (${metal.MaterialNumber})`;
       handleFieldChange(selectedMetalField, metalString);
     }
     setIsMetalModalOpen(false);
   };
 
-  const metalOptions: SelectionOption[] = METAL_GROUPS.map((group) => ({
+  const getSelectedMetalId = (field: MetalField) => {
+    const value = wpsData[field];
+    if (typeof value === "string" && value) {
+      return value;
+    }
+    return undefined;
+  };
+
+  const metalCategories: Category[] = METAL_GROUPS.map((group) => ({
     id: group.GroupNumber,
     label: group.GroupNumber,
     description: group.Description,
-    children: METALS.filter(
-      (metal) => metal.GroupNumber === group.GroupNumber
-    ).map((metal) => ({
-      id: `${metal.GroupNumber} ${metal.Standard} ${metal.Designation} (${metal.MaterialNumber})`,
-      label: metal.Designation,
-      description: metal.Standard,
-      data: metal,
+    children: group.Subgroups?.map((subgroup) => ({
+      id: subgroup.GroupNumber,
+      label: subgroup.GroupNumber,
+      description: subgroup.Description,
     })),
+  }));
+
+  const metalItems: Item[] = METALS.map((metal) => ({
+    id: `${metal.GroupNumber} ${metal.Standard} ${metal.Designation} (${metal.MaterialNumber})`,
+    categoryId: metal.GroupNumber,
+    ...metal,
   }));
 
   const tableColumns = [
@@ -151,9 +162,14 @@ export function GeneralInfo() {
         isOpen={isMetalModalOpen}
         onClose={() => setIsMetalModalOpen(false)}
         title="Select Metal"
-        options={metalOptions}
+        categories={metalCategories}
+        items={metalItems}
+        selectedId={
+          selectedMetalField
+            ? getSelectedMetalId(selectedMetalField)
+            : undefined
+        }
         onSelect={handleMetalSelect}
-        showTable={true}
         tableColumns={tableColumns}
       />
     </Container>

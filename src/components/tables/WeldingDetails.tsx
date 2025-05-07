@@ -1,8 +1,9 @@
 import { useWPS } from "../../context/WPSContext";
 import { StyledTable } from "../common/StyledTable";
 import { WELDING_PROCESSES } from "../../constants/weldingProcesses";
+import { WELDING_CATEGORIES } from "../../constants/weldingCategories";
 import { useState } from "react";
-import { SelectionModal, SelectionOption } from "../common/SelectionModal";
+import { SelectionModal, Category, Item } from "../common/SelectionModal";
 import styled from "styled-components";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
@@ -42,20 +43,25 @@ function ProcessSelector({
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const options: SelectionOption[] = WELDING_PROCESSES.map((proc) => ({
-    id: proc.Code,
-    label: proc.Code,
-    description: proc.Description,
-    children: proc.Subprocesses.map((sub) => ({
-      id: sub.Code,
-      label: sub.Code,
-      description: sub.Description,
-    })),
+  const processCategories: Category[] = WELDING_CATEGORIES.map((cat) => ({
+    id: cat.Code,
+    label: cat.Code,
+    description: cat.Description,
   }));
 
-  const selected = WELDING_PROCESSES.flatMap((p) => p.Subprocesses).find(
-    (sp) => sp.Code === value
-  );
+  const processItems: Item[] = WELDING_PROCESSES.map((proc) => ({
+    id: proc.Code,
+    categoryId: proc.CategoryCode,
+    Code: proc.Code,
+    Description: proc.Description,
+  }));
+
+  const tableColumns = [
+    { key: "Code", label: "Code" },
+    { key: "Description", label: "Description" },
+  ];
+
+  const selected = processItems.find((item) => item.Code === value);
 
   return (
     <>
@@ -66,9 +72,11 @@ function ProcessSelector({
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         title="Select Process"
-        options={options}
+        categories={processCategories}
+        items={processItems}
         selectedId={value}
-        onSelect={(option) => onChange(option.id)}
+        onSelect={(item) => onChange(item.Code as string)}
+        tableColumns={tableColumns}
       />
     </>
   );
