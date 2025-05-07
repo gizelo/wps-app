@@ -24,10 +24,13 @@ const Th = styled.th`
   border: 1px solid #000;
   padding: 6px;
   font-weight: normal;
+  vertical-align: top;
+  text-align: center;
 `;
 
 const Td = styled.td`
   border: 1px solid #000;
+  text-align: center;
 `;
 
 export function StyledTable({
@@ -57,6 +60,7 @@ export function StyledTable({
                     <StyledInput
                       value={row[header] || ""}
                       onChange={(value) => onUpdate(rowIndex, header, value)}
+                      centered
                     />
                   )}
                 </Td>
