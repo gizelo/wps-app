@@ -4,6 +4,7 @@ import { WELDING_PROCESSES } from "../../constants/weldingProcesses";
 import { WELDING_CATEGORIES } from "../../constants/weldingCategories";
 import { useState } from "react";
 import { SelectionModal, Category, Item } from "../common/SelectionModal";
+import { RangeEditModal } from "../common/RangeEditModal";
 import styled from "styled-components";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
@@ -84,9 +85,17 @@ function ProcessSelector({
 
 export function WeldingDetails() {
   const { wpsData, updateLayer } = useWPS();
+  const [isRangeModalOpen, setIsRangeModalOpen] = useState(false);
+  const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
+  const [selectedRangeField, setSelectedRangeField] = useState<string | null>(
+    null
+  );
 
   const tableData = wpsData.Layers.map((layer) => ({
-    Pass: layer.Pass.join(", "),
+    Pass:
+      layer.Pass.length === 2
+        ? `${layer.Pass[0]}-${layer.Pass[1]}`
+        : layer.Pass[0].toString(),
     Position: layer.Position,
     "Pass Type": layer.PassType,
     Process: layer.Process,
@@ -105,7 +114,8 @@ export function WeldingDetails() {
 
     switch (field) {
       case "Pass":
-        updatedLayer.Pass = value.split(",").map((p) => parseInt(p.trim()));
+        setSelectedRowIndex(index);
+        setIsRangeModalOpen(true);
         break;
       case "Position":
         updatedLayer.Position = value;
@@ -115,51 +125,76 @@ export function WeldingDetails() {
         break;
       case "Process":
         updatedLayer.Process = value;
+        updateLayer(index, updatedLayer);
         break;
       case "Filler Diameter [mm]":
         updatedLayer.FillerDiameter = parseFloat(value);
         break;
-      case "Current [A]": {
-        const [currentLow, currentHigh] = value
-          .split("-")
-          .map((v) => parseFloat(v.trim()));
-        updatedLayer.Current = { LowLimit: currentLow, HighLimit: currentHigh };
+      case "Current [A]":
+      case "Voltage [V]":
+      case "Wire Feed Speed [m/min]":
+      case "Travel Speed [cm/min]":
+      case "Heat Input [kJ/cm]":
+        setSelectedRowIndex(index);
+        setSelectedRangeField(field);
+        setIsRangeModalOpen(true);
         break;
-      }
-      case "Voltage [V]": {
-        const [voltageLow, voltageHigh] = value
-          .split("-")
-          .map((v) => parseFloat(v.trim()));
-        updatedLayer.Voltage = { LowLimit: voltageLow, HighLimit: voltageHigh };
-        break;
-      }
       case "Polarity":
         updatedLayer.Polarity = value;
         break;
-      case "Wire Feed Speed [m/min]": {
-        const [wfsLow, wfsHigh] = value
-          .split("-")
-          .map((v) => parseFloat(v.trim()));
-        updatedLayer.WireFeedSpeed = { LowLimit: wfsLow, HighLimit: wfsHigh };
-        break;
-      }
-      case "Travel Speed [cm/min]": {
-        const [tsLow, tsHigh] = value
-          .split("-")
-          .map((v) => parseFloat(v.trim()));
-        updatedLayer.TravelSpeed = { LowLimit: tsLow, HighLimit: tsHigh };
-        break;
-      }
-      case "Heat Input [kJ/cm]": {
-        const [hiLow, hiHigh] = value
-          .split("-")
-          .map((v) => parseFloat(v.trim()));
-        updatedLayer.HeatInput = { LowLimit: hiLow, HighLimit: hiHigh };
-        break;
-      }
     }
 
-    updateLayer(index, updatedLayer);
+    if (field !== "Pass" && !field.includes("[") && field !== "Process") {
+      updateLayer(index, updatedLayer);
+    }
+  };
+
+  const handleRangeSave = (values: number[]) => {
+    if (selectedRowIndex !== null) {
+      const layer = wpsData.Layers[selectedRowIndex];
+      const updatedLayer = { ...layer };
+
+      if (selectedRangeField) {
+        switch (selectedRangeField) {
+          case "Current [A]":
+            updatedLayer.Current = {
+              LowLimit: values[0],
+              HighLimit: values[1],
+            };
+            break;
+          case "Voltage [V]":
+            updatedLayer.Voltage = {
+              LowLimit: values[0],
+              HighLimit: values[1],
+            };
+            break;
+          case "Wire Feed Speed [m/min]":
+            updatedLayer.WireFeedSpeed = {
+              LowLimit: values[0],
+              HighLimit: values[1],
+            };
+            break;
+          case "Travel Speed [cm/min]":
+            updatedLayer.TravelSpeed = {
+              LowLimit: values[0],
+              HighLimit: values[1],
+            };
+            break;
+          case "Heat Input [kJ/cm]":
+            updatedLayer.HeatInput = {
+              LowLimit: values[0],
+              HighLimit: values[1],
+            };
+            break;
+        }
+      } else {
+        updatedLayer.Pass = values;
+      }
+
+      updateLayer(selectedRowIndex, updatedLayer);
+    }
+    setIsRangeModalOpen(false);
+    setSelectedRangeField(null);
   };
 
   // Custom cell renderer for Process
@@ -170,14 +205,102 @@ export function WeldingDetails() {
         onChange={(code) => handleUpdate(rowIndex, "Process", code)}
       />
     ),
+    Pass: (value: string, rowIndex: number) => (
+      <SelectorButton
+        hasValue={!!value}
+        onClick={() => handleUpdate(rowIndex, "Pass", value)}
+      >
+        {value || "Edit pass"}
+      </SelectorButton>
+    ),
+    "Current [A]": (value: string, rowIndex: number) => (
+      <SelectorButton
+        hasValue={!!value}
+        onClick={() => handleUpdate(rowIndex, "Current [A]", value)}
+      >
+        {value || "Edit range"}
+      </SelectorButton>
+    ),
+    "Voltage [V]": (value: string, rowIndex: number) => (
+      <SelectorButton
+        hasValue={!!value}
+        onClick={() => handleUpdate(rowIndex, "Voltage [V]", value)}
+      >
+        {value || "Edit range"}
+      </SelectorButton>
+    ),
+    "Wire Feed Speed [m/min]": (value: string, rowIndex: number) => (
+      <SelectorButton
+        hasValue={!!value}
+        onClick={() => handleUpdate(rowIndex, "Wire Feed Speed [m/min]", value)}
+      >
+        {value || "Edit range"}
+      </SelectorButton>
+    ),
+    "Travel Speed [cm/min]": (value: string, rowIndex: number) => (
+      <SelectorButton
+        hasValue={!!value}
+        onClick={() => handleUpdate(rowIndex, "Travel Speed [cm/min]", value)}
+      >
+        {value || "Edit range"}
+      </SelectorButton>
+    ),
+    "Heat Input [kJ/cm]": (value: string, rowIndex: number) => (
+      <SelectorButton
+        hasValue={!!value}
+        onClick={() => handleUpdate(rowIndex, "Heat Input [kJ/cm]", value)}
+      >
+        {value || "Edit range"}
+      </SelectorButton>
+    ),
   };
 
   return (
-    <StyledTable
-      headers={headers}
-      data={tableData}
-      onUpdate={handleUpdate}
-      customRenderers={customRenderers}
-    />
+    <>
+      <StyledTable
+        headers={headers}
+        data={tableData}
+        onUpdate={handleUpdate}
+        customRenderers={customRenderers}
+      />
+      {selectedRowIndex !== null && (
+        <RangeEditModal
+          isOpen={isRangeModalOpen}
+          onClose={() => {
+            setIsRangeModalOpen(false);
+            setSelectedRangeField(null);
+          }}
+          onSave={handleRangeSave}
+          initialValues={
+            selectedRangeField
+              ? [
+                  selectedRangeField === "Current [A]"
+                    ? wpsData.Layers[selectedRowIndex].Current.LowLimit
+                    : selectedRangeField === "Voltage [V]"
+                    ? wpsData.Layers[selectedRowIndex].Voltage.LowLimit
+                    : selectedRangeField === "Wire Feed Speed [m/min]"
+                    ? wpsData.Layers[selectedRowIndex].WireFeedSpeed.LowLimit
+                    : selectedRangeField === "Travel Speed [cm/min]"
+                    ? wpsData.Layers[selectedRowIndex].TravelSpeed.LowLimit
+                    : wpsData.Layers[selectedRowIndex].HeatInput.LowLimit,
+                  selectedRangeField === "Current [A]"
+                    ? wpsData.Layers[selectedRowIndex].Current.HighLimit
+                    : selectedRangeField === "Voltage [V]"
+                    ? wpsData.Layers[selectedRowIndex].Voltage.HighLimit
+                    : selectedRangeField === "Wire Feed Speed [m/min]"
+                    ? wpsData.Layers[selectedRowIndex].WireFeedSpeed.HighLimit
+                    : selectedRangeField === "Travel Speed [cm/min]"
+                    ? wpsData.Layers[selectedRowIndex].TravelSpeed.HighLimit
+                    : wpsData.Layers[selectedRowIndex].HeatInput.HighLimit,
+                ]
+              : wpsData.Layers[selectedRowIndex].Pass
+          }
+          title={
+            selectedRangeField ? `Edit ${selectedRangeField}` : "Edit Pass"
+          }
+          mode={selectedRangeField ? "range" : "pass"}
+        />
+      )}
+    </>
   );
 }

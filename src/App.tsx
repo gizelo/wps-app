@@ -30,7 +30,7 @@ const Section = styled.div`
 `;
 
 const SectionTitle = styled.h4`
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   font-size: 10px;
   font-weight: normal;
 `;

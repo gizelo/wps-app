@@ -61,10 +61,9 @@ export const DATA = {
       },
       ArcLengthCorrection: "+6",
       FillerMetal: {
-        Standard: "EN 12072",
-        Designation: "G/W/P/S 19 12 3 NbSi",
-        MaterialNumber: "1.4576",
-        CommertialDesignation: "ML 19.12.3 NbSi",
+        Designation: "EN ISO 18273: S Al 1070 (Al99,7)",
+        MaterialNumber: "3.0259",
+        CommertialDesignation: "MA-1070 (Al99,7)",
         Manufacturer: "MIGAL.CO",
       },
       ShieldingGas: {

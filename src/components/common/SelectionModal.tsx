@@ -134,7 +134,7 @@ const Table = styled.table`
 const Th = styled.th`
   padding: 8px;
   text-align: left;
-  border-bottom: 2px solid #ddd;
+  border-bottom: 1px solid #ddd;
   background: #f8f9fa;
   position: sticky;
   top: 0;
@@ -143,6 +143,7 @@ const Th = styled.th`
 const Td = styled.td`
   padding: 8px;
   border-bottom: 1px solid #ddd;
+  text-align: left;
 `;
 
 const Tr = styled.tr<{ selected?: boolean }>`
@@ -338,7 +339,7 @@ export function SelectionModal({
                 ▶
               </ExpandIcon>
             )}
-            <div>
+            <div style={{ display: "flex", gap: "10px" }}>
               <span style={{ fontSize: "1.2em", fontWeight: "bold" }}>
                 {category.label}
               </span>
@@ -347,7 +348,7 @@ export function SelectionModal({
                   style={{
                     fontSize: "1.2em",
                     color: "#454545",
-                    marginLeft: "10px",
+                    textAlign: "left",
                   }}
                 >
                   {category.description}

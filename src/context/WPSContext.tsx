@@ -1,15 +1,7 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { useContext, useState, ReactNode } from "react";
 import { WPSData } from "../types/wps";
 import { DATA } from "../constants/data";
-
-interface WPSContextType {
-  wpsData: WPSData;
-  updateWPSData: (data: Partial<WPSData>) => void;
-  updateLayer: (index: number, data: Partial<WPSData["Layers"][0]>) => void;
-  saveWPSData: () => void;
-}
-
-const WPSContext = createContext<WPSContextType | undefined>(undefined);
+import { WPSContext, WPSContextType, saveWPSDataToFile } from "./wpsUtils";
 
 export function WPSProvider({ children }: { children: ReactNode }) {
   const [wpsData, setWPSData] = useState<WPSData>(DATA);
@@ -27,26 +19,13 @@ export function WPSProvider({ children }: { children: ReactNode }) {
     }));
   };
 
-  const saveWPSData = () => {
-    const jsonString = JSON.stringify(wpsData, null, 2);
-    const blob = new Blob([jsonString], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "wps-data.json";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <WPSContext.Provider
       value={{
         wpsData,
         updateWPSData,
         updateLayer,
-        saveWPSData,
+        saveWPSData: () => saveWPSDataToFile(wpsData),
       }}
     >
       {children}
@@ -54,7 +33,7 @@ export function WPSProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useWPS() {
+export function useWPS(): WPSContextType {
   const context = useContext(WPSContext);
   if (context === undefined) {
     throw new Error("useWPS must be used within a WPSProvider");

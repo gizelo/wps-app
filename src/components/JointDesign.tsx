@@ -13,7 +13,7 @@ const Container = styled.div`
 const Section = styled.div``;
 
 const Title = styled.div`
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 `;
 
 const ImageContainer = styled.div`

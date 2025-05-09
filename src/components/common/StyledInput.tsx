@@ -18,7 +18,7 @@ const StyledInputContainer = styled.div<StyledContainerProps>`
   width: ${(props) => props.$width || "100%"};
 `;
 
-const Input = styled.input<InputProps>`
+const Input = styled.input<Omit<InputProps, "onChange">>`
   width: 100%;
   padding: 4px 8px;
   border: none;

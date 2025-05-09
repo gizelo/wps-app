@@ -31,7 +31,6 @@ export interface HeatInput {
 }
 
 export interface FillerMetal {
-  Standard: string;
   Designation: string;
   MaterialNumber: string;
   CommertialDesignation: string;
