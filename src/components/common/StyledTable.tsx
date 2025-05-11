@@ -31,6 +31,7 @@ const Th = styled.th`
 const Td = styled.td`
   border: 1px solid #000;
   text-align: center;
+  white-space: nowrap;
 `;
 
 export function StyledTable({

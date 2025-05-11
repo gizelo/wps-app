@@ -24,7 +24,7 @@ const ModalContent = styled.div`
 const InputGroup = styled.div`
   display: flex;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 `;
 
 const InputWrapper = styled.div`
@@ -63,6 +63,12 @@ const Button = styled.button<{ $primary?: boolean }>`
   }
 `;
 
+const ErrorMessage = styled.div`
+  color: #dc3545;
+  font-size: 14px;
+  margin-bottom: 16px;
+`;
+
 type EditMode = "range" | "pass";
 
 interface RangeEditModalProps {
@@ -99,6 +105,22 @@ export function RangeEditModal({
       setError("");
     }
   }, [isOpen, initialValues]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   const validateValue = (
     value: string,
@@ -196,7 +218,7 @@ export function RangeEditModal({
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
-        <h3>{title}</h3>
+        <h2 style={{ marginBottom: "16px" }}>{title}</h2>
         <InputGroup>
           <InputWrapper>
             <Label>{label1}</Label>
@@ -230,9 +252,3 @@ export function RangeEditModal({
     </ModalOverlay>
   );
 }
-
-const ErrorMessage = styled.div`
-  color: #dc3545;
-  font-size: 14px;
-  margin-bottom: 16px;
-`;

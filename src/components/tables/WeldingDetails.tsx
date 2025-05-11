@@ -6,6 +6,8 @@ import { useState } from "react";
 import { SelectionModal, Category, Item } from "../common/SelectionModal";
 import { RangeEditModal } from "../common/RangeEditModal";
 import styled from "styled-components";
+import { StyledSelect } from "../common/StyledSelect";
+import { collections } from "../../constants/collections";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
   cursor: pointer;
@@ -96,7 +98,9 @@ export function WeldingDetails() {
       layer.Pass.length === 2
         ? `${layer.Pass[0]}-${layer.Pass[1]}`
         : layer.Pass[0].toString(),
-    Position: layer.Position,
+    Position: Array.isArray(layer.Position)
+      ? layer.Position.join(", ")
+      : layer.Position,
     "Pass Type": layer.PassType,
     Process: layer.Process,
     "Filler Diameter [mm]": layer.FillerDiameter.toString(),
@@ -108,7 +112,11 @@ export function WeldingDetails() {
     "Heat Input [kJ/cm]": `${layer.HeatInput.LowLimit}-${layer.HeatInput.HighLimit}`,
   }));
 
-  const handleUpdate = (index: number, field: string, value: string) => {
+  const handleUpdate = (
+    index: number,
+    field: string,
+    value: string | string[]
+  ) => {
     const layer = wpsData.Layers[index];
     const updatedLayer = { ...layer };
 
@@ -118,17 +126,17 @@ export function WeldingDetails() {
         setIsRangeModalOpen(true);
         break;
       case "Position":
-        updatedLayer.Position = value;
+        updatedLayer.Position = Array.isArray(value) ? value.join(", ") : value;
         break;
       case "Pass Type":
-        updatedLayer.PassType = value;
+        updatedLayer.PassType = value as string;
         break;
       case "Process":
-        updatedLayer.Process = value;
+        updatedLayer.Process = value as string;
         updateLayer(index, updatedLayer);
         break;
       case "Filler Diameter [mm]":
-        updatedLayer.FillerDiameter = parseFloat(value);
+        updatedLayer.FillerDiameter = parseFloat(value as string);
         break;
       case "Current [A]":
       case "Voltage [V]":
@@ -140,7 +148,7 @@ export function WeldingDetails() {
         setIsRangeModalOpen(true);
         break;
       case "Polarity":
-        updatedLayer.Polarity = value;
+        updatedLayer.Polarity = value as string;
         break;
     }
 
@@ -203,6 +211,44 @@ export function WeldingDetails() {
       <ProcessSelector
         value={value}
         onChange={(code) => handleUpdate(rowIndex, "Process", code)}
+      />
+    ),
+    Position: (value: string, rowIndex: number) => (
+      <StyledSelect
+        value={value ? value.split(", ") : []}
+        onChange={(newValue) => handleUpdate(rowIndex, "Position", newValue)}
+        options={collections.WeldingPositions.map((pos) => ({
+          value: pos,
+          label: pos,
+        }))}
+        multiple={true}
+        placeholder="Select positions"
+      />
+    ),
+    "Pass Type": (value: string, rowIndex: number) => (
+      <StyledSelect
+        value={value}
+        onChange={(newValue) =>
+          handleUpdate(rowIndex, "Pass Type", newValue as string)
+        }
+        options={collections.PassType.map((type) => ({
+          value: type,
+          label: type,
+        }))}
+        placeholder="Select pass type"
+      />
+    ),
+    Polarity: (value: string, rowIndex: number) => (
+      <StyledSelect
+        value={value}
+        onChange={(newValue) =>
+          handleUpdate(rowIndex, "Polarity", newValue as string)
+        }
+        options={collections.PolarityType.map((type) => ({
+          value: type,
+          label: type,
+        }))}
+        placeholder="Select polarity"
       />
     ),
     Pass: (value: string, rowIndex: number) => (

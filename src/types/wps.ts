@@ -86,7 +86,7 @@ export interface Layer {
 export interface WPSData {
   WPSNumber: string;
   Revision: string;
-  Place: string;
+  Location: string;
   WPQR: string;
   WelderQualification: string;
   WeldingProcess: string;

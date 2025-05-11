@@ -1,7 +1,7 @@
 export const DATA = {
   WPSNumber: "WPS001",
   Revision: "1",
-  Place: "",
+  Location: "",
   WPQR: "WPQR001",
   WelderQualification: "131_P_BW_23_S_t5_PA_ss_nb",
   WeldingProcess: "131",

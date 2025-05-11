@@ -3,6 +3,8 @@ import { StyledTable } from "../common/StyledTable";
 import { useState } from "react";
 import { RangeEditModal } from "../common/RangeEditModal";
 import styled from "styled-components";
+import { collections } from "../../constants/collections";
+import { StyledSelect } from "../common/StyledSelect";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
   cursor: pointer;
@@ -113,6 +115,21 @@ export function FurtherInfo() {
       >
         {value || "Edit range"}
       </SelectorButton>
+    ),
+    "Droplet Transfer": (value: string, rowIndex: number) => (
+      <StyledSelect
+        value={value || ""}
+        onChange={(newValue) => {
+          if (typeof newValue === "string") {
+            handleUpdate(rowIndex, "Droplet Transfer", newValue);
+          }
+        }}
+        options={collections.DropletTransferType.map((type) => ({
+          value: type,
+          label: type,
+        }))}
+        placeholder="Select transfer type"
+      />
     ),
   };
 

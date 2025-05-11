@@ -5,6 +5,10 @@ import { StyledInput } from "./common/StyledInput";
 import { SelectionModal, Category, Item } from "./common/SelectionModal";
 import { METAL_GROUPS } from "../constants/metalGroups";
 import { METALS } from "../constants/metals";
+import { users } from "../constants/users";
+import { organizations } from "../constants/organizations";
+import { collections } from "../constants/collections";
+import { StyledSelect } from "./common/StyledSelect";
 
 const Container = styled.div`
   display: grid;
@@ -92,13 +96,13 @@ export function GeneralInfo() {
   ];
 
   const leftColumnFields = [
-    { key: "Place", label: "Place:" },
+    { key: "Location", label: "Location:" },
     { key: "WPQR", label: "WPQR:" },
     { key: "WelderQualification", label: "Qualification of welder:" },
     { key: "WeldingProcess", label: "Welding process (EN ISO 4063):" },
     { key: "SeamType", label: "Material/Seam type:" },
     { key: "Customer", label: "Customer:" },
-    { key: "Supervisor", label: "Supervisor (Name):" },
+    { key: "Supervisor", label: "Manufacturer:" },
     { key: "PartNumber", label: "Part number:" },
     { key: "Drawing", label: "Drawing:" },
   ] as const;
@@ -134,6 +138,105 @@ export function GeneralInfo() {
           >
             {value || "Select metal"}
           </SelectorButton>
+        </React.Fragment>
+      );
+    }
+
+    if (key === "Supervisor") {
+      const supervisorOptions = users.map((user) => ({
+        value: user.Name,
+        label: user.Name,
+      }));
+
+      return (
+        <React.Fragment key={key}>
+          <Label>{label}</Label>
+          <StyledSelect
+            value={wpsData[key] as string}
+            onChange={(value) => handleFieldChange(key, value as string)}
+            options={supervisorOptions}
+            placeholder="Select supervisor"
+          />
+        </React.Fragment>
+      );
+    }
+
+    if (key === "Customer") {
+      const customerOptions = organizations.map((org) => ({
+        value: org.Alias,
+        label: org.Alias,
+      }));
+
+      return (
+        <React.Fragment key={key}>
+          <Label>{label}</Label>
+          <StyledSelect
+            value={wpsData[key] as string}
+            onChange={(value) => handleFieldChange(key, value as string)}
+            options={customerOptions}
+            placeholder="Select customer"
+          />
+        </React.Fragment>
+      );
+    }
+
+    if (key === "Examiner") {
+      const examinerOptions = users.map((user) => ({
+        value: user.Name,
+        label: user.Name,
+      }));
+
+      return (
+        <React.Fragment key={key}>
+          <Label>{label}</Label>
+          <StyledSelect
+            value={wpsData[key] as string}
+            onChange={(value) => handleFieldChange(key, value as string)}
+            options={examinerOptions}
+            placeholder="Select examiner"
+          />
+        </React.Fragment>
+      );
+    }
+
+    if (key === "PreparationMethod") {
+      const preparationOptions = collections.PreparationOrCleaningMethod.map(
+        (method) => ({
+          value: method,
+          label: method,
+        })
+      );
+
+      return (
+        <React.Fragment key={key}>
+          <Label>{label}</Label>
+          <StyledSelect
+            value={wpsData[key] as string}
+            onChange={(value) => handleFieldChange(key, value as string)}
+            options={preparationOptions}
+            placeholder="Select preparation method"
+          />
+        </React.Fragment>
+      );
+    }
+
+    if (key === "RootPassPreparation") {
+      const rootPassOptions = collections.RootPassPreparationMethod.map(
+        (method) => ({
+          value: method,
+          label: method,
+        })
+      );
+
+      return (
+        <React.Fragment key={key}>
+          <Label>{label}</Label>
+          <StyledSelect
+            value={wpsData[key] as string}
+            onChange={(value) => handleFieldChange(key, value as string)}
+            options={rootPassOptions}
+            placeholder="Select root pass preparation"
+          />
         </React.Fragment>
       );
     }
