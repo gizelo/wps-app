@@ -14,6 +14,7 @@ const Section = styled.div``;
 
 const Title = styled.div`
   margin-bottom: 4px;
+  font-weight: bold;
 `;
 
 const ImageContainer = styled.div`

@@ -8,6 +8,8 @@ import { fillers } from "../../constants/fillers";
 import { RangeEditModal } from "../common/RangeEditModal";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
+  white-space: nowrap;
+  height: 20px;
   cursor: pointer;
   padding: 4px;
   background: #f2f2f2;
@@ -22,10 +24,10 @@ const SelectorButton = styled.div<{ hasValue: boolean }>`
 `;
 
 const headers = [
-  "Pass",
+  "Passes",
   "Designation",
-  "Material Number",
-  "Commercial Designation",
+  "Diameter",
+  "Brandname",
   "Manufacturer",
 ];
 
@@ -36,18 +38,18 @@ export function FillerMetal() {
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
 
   const tableData = wpsData.Layers.map((layer) => ({
-    Pass:
-      layer.Pass.length === 2
-        ? `${layer.Pass[0]}-${layer.Pass[1]}`
-        : layer.Pass[0].toString(),
+    Passes:
+      layer.Passes.length === 2
+        ? `${layer.Passes[0]}-${layer.Passes[1]}`
+        : layer.Passes[0].toString(),
     Designation: layer.FillerMetal.Designation,
-    "Material Number": layer.FillerMetal.MaterialNumber,
-    "Commercial Designation": layer.FillerMetal.CommertialDesignation,
+    Diameter: layer.FillerMetal.Diameter.toString(),
+    Brandname: layer.FillerMetal.Brandname,
     Manufacturer: layer.FillerMetal.Manufacturer,
   }));
 
   const handleUpdate = (index: number, field: string) => {
-    if (field === "Pass") {
+    if (field === "Passes") {
       setSelectedRowIndex(index);
       setIsRangeModalOpen(true);
       return;
@@ -62,7 +64,7 @@ export function FillerMetal() {
     if (selectedRowIndex !== null) {
       const layer = wpsData.Layers[selectedRowIndex];
       const updatedLayer = { ...layer };
-      updatedLayer.Pass = values;
+      updatedLayer.Passes = values;
       updateLayer(selectedRowIndex, updatedLayer);
     }
     setIsRangeModalOpen(false);
@@ -75,13 +77,31 @@ export function FillerMetal() {
       const updatedLayer = { ...layer };
       updatedLayer.FillerMetal = {
         Designation: filler.Designation as string,
-        MaterialNumber: filler.MaterialNumber as string,
-        CommertialDesignation: filler.CommertialDesignation as string,
+        Diameter: filler.Diameter as number,
+        Brandname: filler.Brandname as string,
         Manufacturer: filler.Manufacturer as string,
+        Description: filler.Description as string,
       };
       updateLayer(selectedRowIndex, updatedLayer);
     }
     setIsModalOpen(false);
+  };
+
+  const handleReset = () => {
+    if (selectedRowIndex !== null) {
+      const layer = wpsData.Layers[selectedRowIndex];
+      const updatedLayer = { ...layer };
+      updatedLayer.FillerMetal = {
+        Designation: "",
+        Diameter: 0,
+        Brandname: "",
+        Manufacturer: "",
+        Description: "",
+      };
+      updateLayer(selectedRowIndex, updatedLayer);
+    }
+    setIsModalOpen(false);
+    setSelectedRowIndex(null);
   };
 
   // Create categories from filler groups
@@ -103,51 +123,51 @@ export function FillerMetal() {
 
   const tableColumns = [
     { key: "Designation", label: "Designation" },
-    { key: "MaterialNumber", label: "Material Number" },
-    { key: "CommertialDesignation", label: "Commercial Designation" },
+    { key: "Diameter", label: "Diameter" },
+    { key: "Brandname", label: "Brandname" },
     { key: "Manufacturer", label: "Manufacturer" },
   ];
 
-  // Custom cell renderer for all fields except Pass
+  // Custom cell renderer for all fields except Passes
   const customRenderers = {
-    Pass: (value: string, rowIndex: number) => (
+    Passes: (value: string | number, rowIndex: number) => (
       <SelectorButton
         hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Pass")}
+        onClick={() => handleUpdate(rowIndex, "Passes")}
       >
-        {value || "Edit pass"}
+        {String(value)}
       </SelectorButton>
     ),
-    Designation: (value: string, rowIndex: number) => (
+    Designation: (value: string | number, rowIndex: number) => (
       <SelectorButton
         hasValue={!!value}
         onClick={() => handleUpdate(rowIndex, "Designation")}
       >
-        {value || "Select filler metal"}
+        {String(value)}
       </SelectorButton>
     ),
-    "Material Number": (value: string, rowIndex: number) => (
+    Diameter: (value: string | number, rowIndex: number) => (
       <SelectorButton
         hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Material Number")}
+        onClick={() => handleUpdate(rowIndex, "Diameter")}
       >
-        {value || "Select filler metal"}
+        {value}
       </SelectorButton>
     ),
-    "Commercial Designation": (value: string, rowIndex: number) => (
+    Brandname: (value: string | number, rowIndex: number) => (
       <SelectorButton
         hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Commercial Designation")}
+        onClick={() => handleUpdate(rowIndex, "Brandname")}
       >
-        {value || "Select filler metal"}
+        {String(value)}
       </SelectorButton>
     ),
-    Manufacturer: (value: string, rowIndex: number) => (
+    Manufacturer: (value: string | number, rowIndex: number) => (
       <SelectorButton
         hasValue={!!value}
         onClick={() => handleUpdate(rowIndex, "Manufacturer")}
       >
-        {value || "Select filler metal"}
+        {String(value)}
       </SelectorButton>
     ),
   };
@@ -163,6 +183,7 @@ export function FillerMetal() {
       <SelectionModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onReset={handleReset}
         title="Select Filler Metal"
         categories={fillerCategories}
         items={fillerItems}
@@ -182,8 +203,8 @@ export function FillerMetal() {
             setSelectedRowIndex(null);
           }}
           onSave={handleRangeSave}
-          initialValues={wpsData.Layers[selectedRowIndex].Pass}
-          title="Edit Pass"
+          initialValues={wpsData.Layers[selectedRowIndex].Passes}
+          title="Edit Passes"
           mode="pass"
         />
       )}

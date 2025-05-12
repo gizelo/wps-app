@@ -19,11 +19,9 @@ const SelectorButton = styled.div<{ hasValue: boolean }>`
 `;
 
 const headers = [
-  "Pass",
-  "Standard",
-  "Symbol",
+  "Passes",
   "Designation",
-  "Commercial Designation",
+  "Brandname",
   "Manufacturer",
   "Flow Rate [l/min]",
   "Preflow Time [s]",
@@ -37,22 +35,24 @@ export function ShieldingGas() {
   const [selectedField, setSelectedField] = useState<string | null>(null);
 
   const tableData = wpsData.Layers.map((layer) => ({
-    Pass:
-      layer.Pass.length === 2
-        ? `${layer.Pass[0]}-${layer.Pass[1]}`
-        : layer.Pass[0].toString(),
-    Standard: layer.ShieldingGas.Standard,
-    Symbol: layer.ShieldingGas.Symbol,
+    Passes:
+      layer.Passes.length === 2
+        ? `${layer.Passes[0]}-${layer.Passes[1]}`
+        : layer.Passes[0].toString(),
     Designation: layer.ShieldingGas.Designation,
-    "Commercial Designation": layer.ShieldingGas.CommertialDesignation,
+    Brandname: layer.ShieldingGas.Brandname,
     Manufacturer: layer.ShieldingGas.Manufacturer,
     "Flow Rate [l/min]": `${layer.ShieldingGas.FlowRate.LowLimit}-${layer.ShieldingGas.FlowRate.HighLimit}`,
     "Preflow Time [s]": layer.ShieldingGas.PreflowTime.toString(),
     "Postflow Time [s]": layer.ShieldingGas.PostflowTime.toString(),
   }));
 
-  const handleUpdate = (index: number, field: string, value: string) => {
-    if (field === "Pass" || field === "Flow Rate [l/min]") {
+  const handleUpdate = (
+    index: number,
+    field: string,
+    value: string | number
+  ) => {
+    if (field === "Passes" || field === "Flow Rate [l/min]") {
       setSelectedRowIndex(index);
       setSelectedField(field);
       setIsRangeModalOpen(true);
@@ -64,26 +64,22 @@ export function ShieldingGas() {
     const updatedShieldingGas = { ...layer.ShieldingGas };
 
     switch (field) {
-      case "Standard":
-        updatedShieldingGas.Standard = value;
-        break;
-      case "Symbol":
-        updatedShieldingGas.Symbol = value;
-        break;
       case "Designation":
-        updatedShieldingGas.Designation = value;
+        updatedShieldingGas.Designation = value as string;
         break;
-      case "Commercial Designation":
-        updatedShieldingGas.CommertialDesignation = value;
+      case "Brandname":
+        updatedShieldingGas.Brandname = value as string;
         break;
       case "Manufacturer":
-        updatedShieldingGas.Manufacturer = value;
+        updatedShieldingGas.Manufacturer = value as string;
         break;
       case "Preflow Time [s]":
-        updatedShieldingGas.PreflowTime = parseInt(value);
+        updatedShieldingGas.PreflowTime =
+          typeof value === "string" ? parseInt(value) : value;
         break;
       case "Postflow Time [s]":
-        updatedShieldingGas.PostflowTime = parseInt(value);
+        updatedShieldingGas.PostflowTime =
+          typeof value === "string" ? parseInt(value) : value;
         break;
     }
 
@@ -96,8 +92,8 @@ export function ShieldingGas() {
       const layer = wpsData.Layers[selectedRowIndex];
       const updatedLayer = { ...layer };
 
-      if (selectedField === "Pass") {
-        updatedLayer.Pass = values;
+      if (selectedField === "Passes") {
+        updatedLayer.Passes = values;
       } else {
         const updatedShieldingGas = { ...layer.ShieldingGas };
         updatedShieldingGas.FlowRate = {
@@ -115,10 +111,10 @@ export function ShieldingGas() {
   };
 
   const customRenderers = {
-    Pass: (value: string, rowIndex: number) => (
+    Passes: (value: string, rowIndex: number) => (
       <SelectorButton
         hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Pass", value)}
+        onClick={() => handleUpdate(rowIndex, "Passes", value)}
       >
         {value || "Edit pass"}
       </SelectorButton>
@@ -151,8 +147,8 @@ export function ShieldingGas() {
           }}
           onSave={handleRangeSave}
           initialValues={
-            selectedField === "Pass"
-              ? wpsData.Layers[selectedRowIndex].Pass
+            selectedField === "Passes"
+              ? wpsData.Layers[selectedRowIndex].Passes
               : [
                   wpsData.Layers[selectedRowIndex].ShieldingGas.FlowRate
                     .LowLimit,
@@ -160,8 +156,8 @@ export function ShieldingGas() {
                     .HighLimit,
                 ]
           }
-          title={selectedField === "Pass" ? "Edit Pass" : "Edit Flow Rate"}
-          mode={selectedField === "Pass" ? "pass" : "range"}
+          title={selectedField === "Passes" ? "Edit Passes" : "Edit Flow Rate"}
+          mode={selectedField === "Passes" ? "pass" : "range"}
         />
       )}
     </>

@@ -20,6 +20,7 @@ const StyledInputContainer = styled.div<StyledContainerProps>`
 
 const Input = styled.input<Omit<InputProps, "onChange">>`
   width: 100%;
+  height: 22px;
   padding: 4px 8px;
   border: none;
   background: #f2f2f2;

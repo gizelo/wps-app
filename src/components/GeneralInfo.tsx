@@ -30,6 +30,8 @@ const Label = styled.span`
 `;
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
+  white-space: nowrap;
+  height: 22px;
   cursor: pointer;
   padding: 4px;
   background: #f2f2f2;
@@ -61,6 +63,14 @@ export function GeneralInfo() {
       handleFieldChange(selectedMetalField, metalString);
     }
     setIsMetalModalOpen(false);
+  };
+
+  const handleReset = () => {
+    if (selectedMetalField) {
+      handleFieldChange(selectedMetalField, "");
+    }
+    setIsMetalModalOpen(false);
+    setSelectedMetalField(null);
   };
 
   const getSelectedMetalId = (field: MetalField) => {
@@ -102,7 +112,7 @@ export function GeneralInfo() {
     { key: "WeldingProcess", label: "Welding process (EN ISO 4063):" },
     { key: "SeamType", label: "Material/Seam type:" },
     { key: "Customer", label: "Customer:" },
-    { key: "Supervisor", label: "Manufacturer:" },
+    { key: "Manufacturer", label: "Manufacturer:" },
     { key: "PartNumber", label: "Part number:" },
     { key: "Drawing", label: "Drawing:" },
   ] as const;
@@ -136,13 +146,13 @@ export function GeneralInfo() {
               setIsMetalModalOpen(true);
             }}
           >
-            {value || "Select metal"}
+            {value || ""}
           </SelectorButton>
         </React.Fragment>
       );
     }
 
-    if (key === "Supervisor") {
+    if (key === "Manufacturer") {
       const supervisorOptions = users.map((user) => ({
         value: user.Name,
         label: user.Name,
@@ -155,7 +165,6 @@ export function GeneralInfo() {
             value={wpsData[key] as string}
             onChange={(value) => handleFieldChange(key, value as string)}
             options={supervisorOptions}
-            placeholder="Select supervisor"
           />
         </React.Fragment>
       );
@@ -174,7 +183,6 @@ export function GeneralInfo() {
             value={wpsData[key] as string}
             onChange={(value) => handleFieldChange(key, value as string)}
             options={customerOptions}
-            placeholder="Select customer"
           />
         </React.Fragment>
       );
@@ -193,7 +201,6 @@ export function GeneralInfo() {
             value={wpsData[key] as string}
             onChange={(value) => handleFieldChange(key, value as string)}
             options={examinerOptions}
-            placeholder="Select examiner"
           />
         </React.Fragment>
       );
@@ -214,7 +221,6 @@ export function GeneralInfo() {
             value={wpsData[key] as string}
             onChange={(value) => handleFieldChange(key, value as string)}
             options={preparationOptions}
-            placeholder="Select preparation method"
           />
         </React.Fragment>
       );
@@ -235,7 +241,6 @@ export function GeneralInfo() {
             value={wpsData[key] as string}
             onChange={(value) => handleFieldChange(key, value as string)}
             options={rootPassOptions}
-            placeholder="Select root pass preparation"
           />
         </React.Fragment>
       );
@@ -264,6 +269,7 @@ export function GeneralInfo() {
       <SelectionModal
         isOpen={isMetalModalOpen}
         onClose={() => setIsMetalModalOpen(false)}
+        onReset={handleReset}
         title="Select Metal"
         categories={metalCategories}
         items={metalItems}

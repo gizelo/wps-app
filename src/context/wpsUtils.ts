@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import { WPSData } from "../types/wps";
+import { WPSData } from "../types";
 
 export interface WPSContextType {
   wpsData: WPSData;

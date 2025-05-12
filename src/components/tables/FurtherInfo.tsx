@@ -1,10 +1,10 @@
 import { useWPS } from "../../context/WPSContext";
-import { StyledTable } from "../common/StyledTable";
 import { useState } from "react";
 import { RangeEditModal } from "../common/RangeEditModal";
 import styled from "styled-components";
 import { collections } from "../../constants/collections";
 import { StyledSelect } from "../common/StyledSelect";
+import { StyledInput } from "../common/StyledInput";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
   cursor: pointer;
@@ -20,13 +20,16 @@ const SelectorButton = styled.div<{ hasValue: boolean }>`
   }
 `;
 
-const headers = [
-  "Pass",
-  "Tip to Work Distance [mm]",
-  "Weaving Type",
-  "Droplet Transfer",
-  "Gas Nozzle Diameter [mm]",
-];
+interface TableRow {
+  Passes: { value: string; rowSpan: number } | { value: string; rowSpan: 0 };
+  Parameter: string;
+  Value: string;
+  "Weaving Type":
+    | { value: string; rowSpan: number }
+    | { value: string; rowSpan: 0 };
+  _layerIndex: number;
+  _paramField: string;
+}
 
 export function FurtherInfo() {
   const { wpsData, updateLayer } = useWPS();
@@ -34,62 +37,125 @@ export function FurtherInfo() {
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
   const [selectedField, setSelectedField] = useState<string | null>(null);
 
-  const tableData = wpsData.Layers.map((layer) => ({
-    Pass:
-      layer.Pass.length === 2
-        ? `${layer.Pass[0]}-${layer.Pass[1]}`
-        : layer.Pass[0].toString(),
-    "Tip to Work Distance [mm]": `${layer.FurtherInformation.TipToWorkDistance.LowLimit}-${layer.FurtherInformation.TipToWorkDistance.HighLimit}`,
-    "Weaving Type": layer.FurtherInformation.WeavingType,
-    "Droplet Transfer": layer.FurtherInformation.DropletTransfer,
-    "Gas Nozzle Diameter [mm]":
-      layer.FurtherInformation.GasNozzleDiameter.toString(),
-  }));
+  const tableData: TableRow[] = [];
+  wpsData.Layers.forEach((layer, layerIdx) => {
+    const params = [
+      {
+        label: "Tip to work distance [mm]",
+        value:
+          layer.FurtherInformation.Parameters.find(
+            (param) => param.Name === "TipToWorkDistance"
+          )?.Value || "",
+        field: "Tip to Work Distance [mm]",
+      },
+      {
+        label: "Droplet transfer",
+        value:
+          layer.FurtherInformation.Parameters.find(
+            (param) => param.Name === "DropletTransfer"
+          )?.Value || "",
+        field: "Droplet Transfer",
+      },
+      {
+        label: "Diameter of gasnozzle [mm]",
+        value:
+          layer.FurtherInformation.Parameters.find(
+            (param) => param.Name === "GasNozzleDiameter"
+          )?.Value || "",
+        field: "Gas Nozzle Diameter [mm]",
+      },
+    ];
+    params.forEach((param, i) => {
+      tableData.push({
+        Passes:
+          i === 0
+            ? {
+                value:
+                  layer.Passes.length === 2
+                    ? `${layer.Passes[0]}-${layer.Passes[1]}`
+                    : layer.Passes[0].toString(),
+                rowSpan: params.length,
+              }
+            : { value: "", rowSpan: 0 },
+        Parameter: param.label,
+        Value: param.value,
+        "Weaving Type":
+          i === 0
+            ? {
+                value: layer.FurtherInformation.WeavingType || "",
+                rowSpan: params.length,
+              }
+            : { value: "", rowSpan: 0 },
+        _layerIndex: layerIdx,
+        _paramField: param.field,
+      });
+    });
+  });
 
-  const handleUpdate = (index: number, field: string, value: string) => {
-    if (field === "Pass" || field === "Tip to Work Distance [mm]") {
-      setSelectedRowIndex(index);
-      setSelectedField(field);
-      setIsRangeModalOpen(true);
-      return;
-    }
-
-    const layer = wpsData.Layers[index];
+  const handleUpdate = (rowIndex: number, field: string, value: string) => {
+    const row = tableData[rowIndex];
+    const layerIdx = row._layerIndex;
+    const paramField = row._paramField;
+    const layer = wpsData.Layers[layerIdx];
     const updatedLayer = { ...layer };
     const updatedFurtherInfo = { ...layer.FurtherInformation };
 
-    switch (field) {
-      case "Weaving Type":
-        updatedFurtherInfo.WeavingType = value;
-        break;
-      case "Droplet Transfer":
-        updatedFurtherInfo.DropletTransfer = value;
-        break;
-      case "Gas Nozzle Diameter [mm]":
-        updatedFurtherInfo.GasNozzleDiameter = parseFloat(value);
-        break;
+    if (field === "Passes") {
+      setSelectedRowIndex(layerIdx);
+      setSelectedField("Passes");
+      setIsRangeModalOpen(true);
+      return;
     }
-
+    if (paramField === "Tip to Work Distance [mm]") {
+      setSelectedRowIndex(layerIdx);
+      setSelectedField("Tip to Work Distance [mm]");
+      setIsRangeModalOpen(true);
+      return;
+    }
+    if (field === "Weaving Type") {
+      updatedFurtherInfo.WeavingType = value;
+      updatedLayer.FurtherInformation = updatedFurtherInfo;
+      updateLayer(layerIdx, updatedLayer);
+      return;
+    }
+    if (paramField === "Droplet Transfer") {
+      const param = updatedFurtherInfo.Parameters.find(
+        (p) => p.Name === "DropletTransfer"
+      );
+      if (param) param.Value = value;
+      else
+        updatedFurtherInfo.Parameters.push({
+          Name: "DropletTransfer",
+          Value: value,
+        });
+    } else if (paramField === "Gas Nozzle Diameter [mm]") {
+      const param = updatedFurtherInfo.Parameters.find(
+        (p) => p.Name === "GasNozzleDiameter"
+      );
+      if (param) param.Value = value;
+      else
+        updatedFurtherInfo.Parameters.push({
+          Name: "GasNozzleDiameter",
+          Value: value,
+        });
+    }
     updatedLayer.FurtherInformation = updatedFurtherInfo;
-    updateLayer(index, updatedLayer);
+    updateLayer(layerIdx, updatedLayer);
   };
 
   const handleRangeSave = (values: number[]) => {
     if (selectedRowIndex !== null && selectedField) {
       const layer = wpsData.Layers[selectedRowIndex];
       const updatedLayer = { ...layer };
-
-      if (selectedField === "Pass") {
-        updatedLayer.Pass = values;
+      if (selectedField === "Passes") {
+        updatedLayer.Passes = values;
       } else {
         const updatedFurtherInfo = { ...layer.FurtherInformation };
-        updatedFurtherInfo.TipToWorkDistance = {
-          LowLimit: values[0],
-          HighLimit: values[1],
-        };
+        updatedFurtherInfo.Parameters.find(
+          (param) => param.Name === "TipToWorkDistance"
+        )!.Value = `${values[0]}-${values[1]}`;
         updatedLayer.FurtherInformation = updatedFurtherInfo;
       }
-
       updateLayer(selectedRowIndex, updatedLayer);
     }
     setIsRangeModalOpen(false);
@@ -97,50 +163,136 @@ export function FurtherInfo() {
     setSelectedRowIndex(null);
   };
 
-  const customRenderers = {
-    Pass: (value: string, rowIndex: number) => (
-      <SelectorButton
-        hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Pass", value)}
-      >
-        {value || "Edit pass"}
-      </SelectorButton>
-    ),
-    "Tip to Work Distance [mm]": (value: string, rowIndex: number) => (
-      <SelectorButton
-        hasValue={!!value}
-        onClick={() =>
-          handleUpdate(rowIndex, "Tip to Work Distance [mm]", value)
-        }
-      >
-        {value || "Edit range"}
-      </SelectorButton>
-    ),
-    "Droplet Transfer": (value: string, rowIndex: number) => (
-      <StyledSelect
-        value={value || ""}
-        onChange={(newValue) => {
-          if (typeof newValue === "string") {
-            handleUpdate(rowIndex, "Droplet Transfer", newValue);
-          }
-        }}
-        options={collections.DropletTransferType.map((type) => ({
-          value: type,
-          label: type,
-        }))}
-        placeholder="Select transfer type"
-      />
-    ),
-  };
+  const tableHeaders = ["Passes", "Parameter", "Value", "Weaving Type"];
 
   return (
     <>
-      <StyledTable
-        headers={headers}
-        data={tableData}
-        onUpdate={handleUpdate}
-        customRenderers={customRenderers}
-      />
+      <div style={{ width: "100%" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <thead>
+            <tr>
+              {tableHeaders.map((header) => (
+                <th
+                  key={header}
+                  style={{
+                    border: "1px solid #000",
+                    textAlign: "center",
+                    padding: "6px",
+                    fontWeight: "normal",
+                  }}
+                >
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {tableData.map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                {row.Passes.rowSpan > 0 && (
+                  <td
+                    rowSpan={row.Passes.rowSpan}
+                    style={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                      padding: "6px",
+                      background: "#f2f2f2",
+                    }}
+                  >
+                    <SelectorButton
+                      hasValue={!!row.Passes.value}
+                      onClick={() =>
+                        handleUpdate(rowIndex, "Passes", row.Passes.value)
+                      }
+                    >
+                      {row.Passes.value || "Edit pass"}
+                    </SelectorButton>
+                  </td>
+                )}
+                <td
+                  style={{
+                    border: "1px solid #000",
+                    textAlign: "left",
+                    padding: "4px 8px",
+                  }}
+                >
+                  {row.Parameter}
+                </td>
+                <td
+                  style={{
+                    border: "1px solid #000",
+                    textAlign: "center",
+                    background: "#f2f2f2",
+                  }}
+                >
+                  {row.Parameter === "Droplet transfer" ? (
+                    <StyledSelect
+                      value={row.Value || ""}
+                      onChange={(newValue) => {
+                        if (typeof newValue === "string") {
+                          handleUpdate(rowIndex, "Value", newValue);
+                        }
+                      }}
+                      options={collections.DropletTransferType.map((type) => ({
+                        value: type,
+                        label: type,
+                      }))}
+                    />
+                  ) : row.Parameter === "Tip to work distance [mm]" ? (
+                    <SelectorButton
+                      hasValue={!!row.Value}
+                      onClick={() =>
+                        handleUpdate(
+                          rowIndex,
+                          "Tip to Work Distance [mm]",
+                          row.Value
+                        )
+                      }
+                    >
+                      {row.Value || "Edit range"}
+                    </SelectorButton>
+                  ) : (
+                    <StyledInput
+                      value={row.Value || ""}
+                      onChange={(value) =>
+                        handleUpdate(rowIndex, "Value", value)
+                      }
+                      centered
+                    />
+                  )}
+                </td>
+                {row["Weaving Type"].rowSpan > 0 && (
+                  <td
+                    rowSpan={row["Weaving Type"].rowSpan}
+                    style={{
+                      border: "1px solid #000",
+                      textAlign: "center",
+                      padding: "6px",
+                      background: "#f2f2f2",
+                    }}
+                  >
+                    <StyledInput
+                      value={row["Weaving Type"].value || ""}
+                      onChange={(value) => {
+                        const layerIdx = row._layerIndex;
+                        const layer = wpsData.Layers[layerIdx];
+                        const updatedLayer = { ...layer };
+                        const updatedFurtherInfo = {
+                          ...layer.FurtherInformation,
+                          WeavingType: value,
+                        };
+                        updatedLayer.FurtherInformation = updatedFurtherInfo;
+                        updateLayer(layerIdx, updatedLayer);
+                      }}
+                      centered
+                    />
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       {selectedRowIndex !== null && selectedField && (
         <RangeEditModal
           isOpen={isRangeModalOpen}
@@ -151,19 +303,31 @@ export function FurtherInfo() {
           }}
           onSave={handleRangeSave}
           initialValues={
-            selectedField === "Pass"
-              ? wpsData.Layers[selectedRowIndex].Pass
+            selectedField === "Passes"
+              ? wpsData.Layers[selectedRowIndex].Passes
               : [
-                  wpsData.Layers[selectedRowIndex].FurtherInformation
-                    .TipToWorkDistance.LowLimit,
-                  wpsData.Layers[selectedRowIndex].FurtherInformation
-                    .TipToWorkDistance.HighLimit,
+                  Number(
+                    wpsData.Layers[
+                      selectedRowIndex
+                    ].FurtherInformation.Parameters.find(
+                      (param) => param.Name === "TipToWorkDistance"
+                    )!.Value.split("-")[0]
+                  ),
+                  Number(
+                    wpsData.Layers[
+                      selectedRowIndex
+                    ].FurtherInformation.Parameters.find(
+                      (param) => param.Name === "TipToWorkDistance"
+                    )!.Value.split("-")[1]
+                  ),
                 ]
           }
           title={
-            selectedField === "Pass" ? "Edit Pass" : "Edit Tip to Work Distance"
+            selectedField === "Passes"
+              ? "Edit Passes"
+              : "Edit Tip to Work Distance"
           }
-          mode={selectedField === "Pass" ? "pass" : "range"}
+          mode={selectedField === "Passes" ? "pass" : "range"}
         />
       )}
     </>

@@ -1,10 +1,10 @@
 import styled from "styled-components";
 import { useWPS } from "../context/WPSContext";
-import { StyledInput } from "./common/StyledInput";
 
 const StyledTable = styled.table`
   width: 100%;
   border-collapse: collapse;
+  border: 1px solid #ccc;
 `;
 
 const StyledRow = styled.tr``;
@@ -21,10 +21,11 @@ const StyledCell = styled.td<{
   height: ${(props) => props.height || "auto"};
   width: ${(props) => props.width || "auto"};
   padding-right: ${(props) => (props.right ? "8px" : "4px")};
+  border: 1px solid #ccc;
 `;
 
 const TitleCell = styled(StyledCell)`
-  font-size: 14px;
+  font-size: 1.4em;
 `;
 
 export function Header() {
@@ -38,43 +39,115 @@ export function Header() {
     updateWPSData({ Revision: value });
   };
 
+  const handleCaptionChange = (value: string) => {
+    updateWPSData({ Caption: value });
+  };
+
+  const handleDesignationChange = (value: string) => {
+    updateWPSData({ Designation: value });
+  };
+
   return (
-    <StyledTable border={1}>
+    <StyledTable>
       <tbody>
         <StyledRow>
-          <StyledCell width="33.33%" />
-          <TitleCell center width="33.33%">
-            Welding Procedure Specification
+          <StyledCell width="30%" rowSpan={2}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "8px",
+              }}
+            >
+              <img
+                src="/company.png"
+                alt="Company Logo"
+                style={{ width: "100%", height: "100%" }}
+              />
+            </div>
+          </StyledCell>
+          <TitleCell center width="50%">
+            <input
+              type="text"
+              value={wpsData.Caption}
+              onChange={(e) => handleCaptionChange(e.target.value)}
+              style={{
+                width: "100%",
+                height: "100%",
+                border: "none",
+                outline: "none",
+                textAlign: "center",
+                fontWeight: "bold",
+              }}
+            />
           </TitleCell>
-          <StyledCell width="33.33%">
-            <div style={{ display: "flex", gap: "8px" }}>
-              <div>
-                <div style={{ marginBottom: "4px" }}>
-                  <span>WPS-Nr:</span>
-                </div>
-                <StyledInput
-                  value={wpsData.WPSNumber}
-                  onChange={handleWPSNumberChange}
-                />
-              </div>
-              <div>
-                <div style={{ marginBottom: "4px" }}>
-                  <span>Revision:</span>
-                </div>
-                <StyledInput
-                  value={wpsData.Revision}
-                  onChange={handleRevisionChange}
-                />
-              </div>
+          <StyledCell center width="5%">
+            <div style={{ marginBottom: "4px" }}>
+              <span>WPS-Nr:</span>
+            </div>
+            <input
+              type="text"
+              value={wpsData.WPSNumber}
+              onChange={(e) => handleWPSNumberChange(e.target.value)}
+              style={{
+                border: "none",
+                outline: "none",
+                textAlign: "center",
+                fontWeight: "bold",
+                fontSize: "1em",
+              }}
+            />
+          </StyledCell>
+          <StyledCell center width="5%">
+            <div style={{ marginBottom: "4px" }}>
+              <span>Revision:</span>
+            </div>
+            <input
+              type="text"
+              value={wpsData.Revision}
+              onChange={(e) => handleRevisionChange(e.target.value)}
+              style={{
+                border: "none",
+                outline: "none",
+                textAlign: "center",
+                fontWeight: "bold",
+                fontSize: "1em",
+              }}
+            />
+          </StyledCell>
+          <StyledCell rowSpan={2} width="20%">
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                padding: "4px",
+              }}
+            >
+              <img
+                src="/qr.jpeg"
+                alt="QR Code"
+                style={{ width: "100%", height: "100%" }}
+              />
             </div>
           </StyledCell>
         </StyledRow>
         <StyledRow>
-          <StyledCell width="33.33%" />
-          <StyledCell center width="33.33%">
-            Sample WPS
+          <StyledCell center width="50%">
+            <input
+              type="text"
+              value={wpsData.Designation}
+              onChange={(e) => handleDesignationChange(e.target.value)}
+              style={{
+                width: "100%",
+                height: "100%",
+                border: "none",
+                outline: "none",
+                textAlign: "center",
+                fontSize: "1em",
+              }}
+            />
           </StyledCell>
-          <StyledCell right width="33.33%">
+          <StyledCell center colSpan={2} width="10%">
             Page 1 of 2
           </StyledCell>
         </StyledRow>

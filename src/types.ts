@@ -1,54 +1,27 @@
-export interface ParentMaterial {
-  Standard: string;
-  Group: string;
-  Designation: string;
-  MaterialNumber: string;
+export interface Parameter {
+  Name: string;
+  Value: string;
 }
 
-export interface Current {
+export interface Limit {
   LowLimit: number;
   HighLimit: number;
-}
-
-export interface Voltage {
-  LowLimit: number;
-  HighLimit: number;
-}
-
-export interface WireFeedSpeed {
-  LowLimit: number;
-  HighLimit: number;
-}
-
-export interface TravelSpeed {
-  LowLimit: number;
-  HighLimit: number;
-}
-
-export interface HeatInput {
-  LowLimit: number;
-  HighLimit: number;
+  Parameters?: Parameter[];
 }
 
 export interface FillerMetal {
-  Designation: string;
-  MaterialNumber: string;
-  CommertialDesignation: string;
+  Brandname: string;
   Manufacturer: string;
-}
-
-export interface FlowRate {
-  LowLimit: number;
-  HighLimit: number;
+  Description: string;
+  Designation: string;
+  Diameter: number;
 }
 
 export interface ShieldingGas {
-  Standard: string;
-  Symbol: string;
   Designation: string;
-  CommertialDesignation: string;
+  Brandname: string;
   Manufacturer: string;
-  FlowRate: FlowRate;
+  FlowRate: Limit;
   PreflowTime: number;
   PostflowTime: number;
 }
@@ -59,25 +32,21 @@ export interface TipToWorkDistance {
 }
 
 export interface FurtherInformation {
-  TipToWorkDistance: TipToWorkDistance;
+  Parameters: Parameter[];
   WeavingType: string;
-  DropletTransfer: string;
-  GasNozzleDiameter: number;
 }
 
 export interface Layer {
-  Pass: number[];
+  Passes: number[];
   Position: string;
   PassType: string;
   Process: string;
-  FillerDiameter: number;
-  Current: Current;
-  Voltage: Voltage;
+  Current: Limit;
+  Voltage: Limit;
   Polarity: string;
-  WireFeedSpeed: WireFeedSpeed;
-  TravelSpeed: TravelSpeed;
-  HeatInput: HeatInput;
-  ArcLengthCorrection: string;
+  WireFeedSpeed: Limit;
+  TravelSpeed: Limit;
+  HeatInput: Limit;
   FillerMetal: FillerMetal;
   ShieldingGas: ShieldingGas;
   FurtherInformation: FurtherInformation;
@@ -86,26 +55,29 @@ export interface Layer {
 export interface WPSData {
   WPSNumber: string;
   Revision: string;
+  Caption: string;
+  Designation: string;
   Location: string;
   WPQR: string;
   WelderQualification: string;
   WeldingProcess: string;
   SeamType: string;
   Customer: string;
-  Supervisor: string;
+  Manufacturer: string;
   PartNumber: string;
   Drawing: string;
   Examiner: string;
   PreparationMethod: string;
   RootPassPreparation: string;
-  FirstParentMaterial: ParentMaterial;
-  SecondParentMaterial: ParentMaterial;
+  FirstParentMaterial: string;
+  SecondParentMaterial: string;
   ParentMaterialThickness: number;
   OutsideDiameter: number;
   PreheatTemperature: string;
   IntermediatePassTemperature: string;
   JointDesignImage: string;
   WeldBuildupImage: string;
+  Remarks: string;
   Layers: Layer[];
   CreatedBy: string;
   CreationDate: string;

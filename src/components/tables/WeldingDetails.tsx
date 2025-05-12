@@ -12,6 +12,7 @@ import { collections } from "../../constants/collections";
 const SelectorButton = styled.div<{ hasValue: boolean }>`
   cursor: pointer;
   padding: 4px;
+  height: 22px;
   background: #f2f2f2;
   color: ${({ hasValue }) => (hasValue ? "inherit" : "#888")};
   border: 1px solid transparent;
@@ -24,11 +25,10 @@ const SelectorButton = styled.div<{ hasValue: boolean }>`
 `;
 
 const headers = [
-  "Pass",
+  "Passes",
   "Position",
   "Pass Type",
   "Process",
-  "Filler Diameter [mm]",
   "Current [A]",
   "Voltage [V]",
   "Polarity",
@@ -54,7 +54,7 @@ function ProcessSelector({
 
   const processItems: Item[] = WELDING_PROCESSES.map((proc) => ({
     id: proc.Code,
-    categoryId: proc.CategoryCode,
+    categoryId: proc.Code.substring(0, 2),
     Code: proc.Code,
     Description: proc.Description,
   }));
@@ -66,14 +66,20 @@ function ProcessSelector({
 
   const selected = processItems.find((item) => item.Code === value);
 
+  const handleReset = () => {
+    onChange("");
+    setIsOpen(false);
+  };
+
   return (
     <>
       <SelectorButton hasValue={!!selected} onClick={() => setIsOpen(true)}>
-        {selected ? selected.Code : "Select process"}
+        {selected ? selected.Code : ""}
       </SelectorButton>
       <SelectionModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
+        onReset={handleReset}
         title="Select Process"
         categories={processCategories}
         items={processItems}
@@ -94,16 +100,13 @@ export function WeldingDetails() {
   );
 
   const tableData = wpsData.Layers.map((layer) => ({
-    Pass:
-      layer.Pass.length === 2
-        ? `${layer.Pass[0]}-${layer.Pass[1]}`
-        : layer.Pass[0].toString(),
-    Position: Array.isArray(layer.Position)
-      ? layer.Position.join(", ")
-      : layer.Position,
+    Passes:
+      layer.Passes.length === 2
+        ? `${layer.Passes[0]}-${layer.Passes[1]}`
+        : layer.Passes[0].toString(),
+    Position: layer.Position,
     "Pass Type": layer.PassType,
     Process: layer.Process,
-    "Filler Diameter [mm]": layer.FillerDiameter.toString(),
     "Current [A]": `${layer.Current.LowLimit}-${layer.Current.HighLimit}`,
     "Voltage [V]": `${layer.Voltage.LowLimit}-${layer.Voltage.HighLimit}`,
     Polarity: layer.Polarity,
@@ -121,7 +124,7 @@ export function WeldingDetails() {
     const updatedLayer = { ...layer };
 
     switch (field) {
-      case "Pass":
+      case "Passes":
         setSelectedRowIndex(index);
         setIsRangeModalOpen(true);
         break;
@@ -134,9 +137,6 @@ export function WeldingDetails() {
       case "Process":
         updatedLayer.Process = value as string;
         updateLayer(index, updatedLayer);
-        break;
-      case "Filler Diameter [mm]":
-        updatedLayer.FillerDiameter = parseFloat(value as string);
         break;
       case "Current [A]":
       case "Voltage [V]":
@@ -152,7 +152,7 @@ export function WeldingDetails() {
         break;
     }
 
-    if (field !== "Pass" && !field.includes("[") && field !== "Process") {
+    if (field !== "Passes" && !field.includes("[") && field !== "Process") {
       updateLayer(index, updatedLayer);
     }
   };
@@ -196,7 +196,7 @@ export function WeldingDetails() {
             break;
         }
       } else {
-        updatedLayer.Pass = values;
+        updatedLayer.Passes = values;
       }
 
       updateLayer(selectedRowIndex, updatedLayer);
@@ -222,7 +222,6 @@ export function WeldingDetails() {
           label: pos,
         }))}
         multiple={true}
-        placeholder="Select positions"
       />
     ),
     "Pass Type": (value: string, rowIndex: number) => (
@@ -235,7 +234,6 @@ export function WeldingDetails() {
           value: type,
           label: type,
         }))}
-        placeholder="Select pass type"
       />
     ),
     Polarity: (value: string, rowIndex: number) => (
@@ -248,15 +246,14 @@ export function WeldingDetails() {
           value: type,
           label: type,
         }))}
-        placeholder="Select polarity"
       />
     ),
-    Pass: (value: string, rowIndex: number) => (
+    Passes: (value: string, rowIndex: number) => (
       <SelectorButton
         hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Pass", value)}
+        onClick={() => handleUpdate(rowIndex, "Passes", value)}
       >
-        {value || "Edit pass"}
+        {value}
       </SelectorButton>
     ),
     "Current [A]": (value: string, rowIndex: number) => (
@@ -264,7 +261,7 @@ export function WeldingDetails() {
         hasValue={!!value}
         onClick={() => handleUpdate(rowIndex, "Current [A]", value)}
       >
-        {value || "Edit range"}
+        {value}
       </SelectorButton>
     ),
     "Voltage [V]": (value: string, rowIndex: number) => (
@@ -272,7 +269,7 @@ export function WeldingDetails() {
         hasValue={!!value}
         onClick={() => handleUpdate(rowIndex, "Voltage [V]", value)}
       >
-        {value || "Edit range"}
+        {value}
       </SelectorButton>
     ),
     "Wire Feed Speed [m/min]": (value: string, rowIndex: number) => (
@@ -280,7 +277,7 @@ export function WeldingDetails() {
         hasValue={!!value}
         onClick={() => handleUpdate(rowIndex, "Wire Feed Speed [m/min]", value)}
       >
-        {value || "Edit range"}
+        {value}
       </SelectorButton>
     ),
     "Travel Speed [cm/min]": (value: string, rowIndex: number) => (
@@ -288,7 +285,7 @@ export function WeldingDetails() {
         hasValue={!!value}
         onClick={() => handleUpdate(rowIndex, "Travel Speed [cm/min]", value)}
       >
-        {value || "Edit range"}
+        {value}
       </SelectorButton>
     ),
     "Heat Input [kJ/cm]": (value: string, rowIndex: number) => (
@@ -296,7 +293,7 @@ export function WeldingDetails() {
         hasValue={!!value}
         onClick={() => handleUpdate(rowIndex, "Heat Input [kJ/cm]", value)}
       >
-        {value || "Edit range"}
+        {value}
       </SelectorButton>
     ),
   };
@@ -339,10 +336,10 @@ export function WeldingDetails() {
                     ? wpsData.Layers[selectedRowIndex].TravelSpeed.HighLimit
                     : wpsData.Layers[selectedRowIndex].HeatInput.HighLimit,
                 ]
-              : wpsData.Layers[selectedRowIndex].Pass
+              : wpsData.Layers[selectedRowIndex].Passes
           }
           title={
-            selectedRangeField ? `Edit ${selectedRangeField}` : "Edit Pass"
+            selectedRangeField ? `Edit ${selectedRangeField}` : "Edit Passes"
           }
           mode={selectedRangeField ? "range" : "pass"}
         />

@@ -1,6 +1,5 @@
 export const collections = {
   PreparationOrCleaningMethod: [
-    "None",
     "Gas cutting",
     "Pickling",
     "Brushing",
@@ -12,7 +11,6 @@ export const collections = {
     "Waterjet cutting",
   ],
   RootPassPreparationMethod: [
-    "None",
     "Brushing",
     "Chemical cleaning",
     "Shaping",

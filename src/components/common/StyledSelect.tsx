@@ -8,6 +8,7 @@ const SelectContainer = styled.div`
 
 const SelectButton = styled.div<{ hasValue: boolean }>`
   width: 100%;
+  height: 22px;
   padding: 4px 8px;
   border: none;
   background: #f2f2f2;
@@ -73,7 +74,6 @@ interface StyledSelectProps {
   value: string | string[];
   onChange: (value: string | string[]) => void;
   options: Option[];
-  placeholder?: string;
   multiple?: boolean;
 }
 
@@ -81,7 +81,6 @@ export function StyledSelect({
   value,
   onChange,
   options,
-  placeholder = "Select...",
   multiple = false,
 }: StyledSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -135,14 +134,14 @@ export function StyledSelect({
 
   const getDisplayValue = () => {
     if (!value || (Array.isArray(value) && value.length === 0)) {
-      return placeholder;
+      return "";
     }
     if (Array.isArray(value)) {
       return value
         .map((v) => options.find((opt) => opt.value === v)?.label)
         .join(", ");
     }
-    return options.find((opt) => opt.value === value)?.label || placeholder;
+    return options.find((opt) => opt.value === value)?.label || "";
   };
 
   const isOptionSelected = (optionValue: string) => {
@@ -166,6 +165,15 @@ export function StyledSelect({
         {getDisplayValue()}
       </SelectButton>
       <Dropdown isOpen={isOpen} position={dropdownPosition}>
+        {!multiple && (
+          <Option
+            key="none"
+            isSelected={!value || value === ""}
+            onClick={() => handleOptionClick("")}
+          >
+            None
+          </Option>
+        )}
         {options.map((option) => (
           <Option
             key={option.value}

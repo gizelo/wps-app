@@ -1,5 +1,5 @@
 import { useContext, useState, ReactNode } from "react";
-import { WPSData } from "../types/wps";
+import { WPSData } from "../types";
 import { DATA } from "../constants/data";
 import { WPSContext, WPSContextType, saveWPSDataToFile } from "./wpsUtils";
 

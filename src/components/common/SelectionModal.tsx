@@ -171,6 +171,7 @@ export interface Item {
 interface SelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onReset: () => void;
   title: string;
   categories: Category[];
   items: Item[];
@@ -183,6 +184,7 @@ interface SelectionModalProps {
 export function SelectionModal({
   isOpen,
   onClose,
+  onReset,
   title,
   categories,
   items,
@@ -422,6 +424,7 @@ export function SelectionModal({
         </ContentContainer>
 
         <ModalFooter>
+          <Button onClick={onReset}>Reset</Button>
           <Button onClick={onClose}>Cancel</Button>
           <Button primary disabled={!hasSelectionChanged} onClick={handleApply}>
             Apply
