@@ -18,7 +18,7 @@ const ModalContent = styled.div`
   background: white;
   padding: 20px;
   border-radius: 8px;
-  width: 90%;
+  width: 80%;
   height: 80vh;
   display: flex;
   flex-direction: column;
@@ -42,19 +42,36 @@ const SearchInput = styled.input`
 
 const ContentContainer = styled.div`
   display: flex;
-  gap: 20px;
   flex: 1;
   overflow: hidden;
   width: 100%;
+`;
+
+const LeftPanel = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 200px;
 `;
 
 const CategoryList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  width: 300px;
+  width: 100%;
   overflow-y: auto;
   padding-right: 14px;
+  flex: 1;
+`;
+
+const DescriptionPanel = styled.div`
+  width: 100%;
+  background-color: #f8f8f8;
+  padding: 12px;
+  border-radius: 4px 0 0 0;
+  font-size: 1.2em;
+  color: #666;
+  text-wrap: auto;
+  text-align: left;
 `;
 
 const CategoryItem = styled.div<{ selected?: boolean; isParent?: boolean }>`
@@ -99,6 +116,7 @@ const ModalFooter = styled.div`
 `;
 
 const Button = styled.button<{ primary?: boolean; disabled?: boolean }>`
+  font-weight: 600;
   padding: 8px 16px;
   border-radius: 4px;
   border: 1px solid ${(props) => (props.primary ? "transparent" : "#ccc")};
@@ -123,6 +141,8 @@ const Button = styled.button<{ primary?: boolean; disabled?: boolean }>`
 const TableContainer = styled.div`
   flex: 1;
   overflow: auto;
+  padding-left: 14px;
+  border-left: 1px solid #ddd;
 `;
 
 const Table = styled.table`
@@ -132,7 +152,7 @@ const Table = styled.table`
 `;
 
 const Th = styled.th`
-  padding: 8px;
+  padding: 8px 12px;
   text-align: left;
   border-bottom: 1px solid #ddd;
   background: #f8f9fa;
@@ -141,7 +161,7 @@ const Th = styled.th`
 `;
 
 const Td = styled.td`
-  padding: 8px;
+  padding: 8px 12px;
   border-bottom: 1px solid #ddd;
   text-align: left;
 `;
@@ -341,22 +361,7 @@ export function SelectionModal({
                 ▶
               </ExpandIcon>
             )}
-            <div style={{ display: "flex", gap: "10px" }}>
-              <span style={{ fontSize: "1.2em", fontWeight: "bold" }}>
-                {category.label}
-              </span>
-              {category.description && (
-                <span
-                  style={{
-                    fontSize: "1.2em",
-                    color: "#454545",
-                    textAlign: "left",
-                  }}
-                >
-                  {category.description}
-                </span>
-              )}
-            </div>
+            <span style={{ fontSize: "1.2em" }}>{category.id}</span>
           </CategoryItem>
           {category.children && expandedItems.has(category.id) && (
             <NestedCategories>
@@ -379,6 +384,7 @@ export function SelectionModal({
         <Table>
           <thead>
             <tr>
+              <Th>Group</Th>
               {tableColumns.map((col) => (
                 <Th key={col.key}>{col.label}</Th>
               ))}
@@ -391,6 +397,7 @@ export function SelectionModal({
                 selected={tempSelected?.id === item.id}
                 onClick={() => setTempSelected(item)}
               >
+                <Td>{item.categoryId}</Td>
                 {tableColumns.map((col) => (
                   <Td key={col.key}>{item[col.key] || ""}</Td>
                 ))}
@@ -414,21 +421,31 @@ export function SelectionModal({
             type="text"
             placeholder="Search..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setSelectedCategory(null);
+            }}
           />
         )}
 
         <ContentContainer>
-          <CategoryList>{renderCategories(categories)}</CategoryList>
+          <LeftPanel>
+            <CategoryList>{renderCategories(categories)}</CategoryList>
+            {selectedCategory?.description && (
+              <DescriptionPanel>
+                {selectedCategory?.description}
+              </DescriptionPanel>
+            )}
+          </LeftPanel>
           {renderTable()}
         </ContentContainer>
 
         <ModalFooter>
-          <Button onClick={onReset}>Reset</Button>
-          <Button onClick={onClose}>Cancel</Button>
           <Button primary disabled={!hasSelectionChanged} onClick={handleApply}>
             Apply
           </Button>
+          <Button onClick={onReset}>Reset</Button>
+          <Button onClick={onClose}>Cancel</Button>
         </ModalFooter>
       </ModalContent>
     </ModalOverlay>

@@ -156,7 +156,7 @@ export function GeneralInfo() {
     { key: "Standard", label: "Standard" },
     { key: "Designation", label: "Designation" },
     { key: "MaterialNumber", label: "Material Number" },
-    { key: "MaterialName", label: "Material Name" },
+    { key: "MaterialName", label: "Material" },
   ];
 
   const leftColumnFields = [
@@ -333,7 +333,7 @@ export function GeneralInfo() {
         isOpen={isMetalModalOpen}
         onClose={() => setIsMetalModalOpen(false)}
         onReset={handleReset}
-        title="Select Metal"
+        title="Base Metals"
         categories={metalCategories}
         items={metalItems}
         selectedId={
