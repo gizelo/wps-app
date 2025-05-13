@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import { useWPS } from "../context/WPSContext";
 import { StyledInput } from "./common/StyledInput";
@@ -45,6 +45,14 @@ const SelectorButton = styled.div<{ hasValue: boolean }>`
   }
 `;
 
+const ReadOnlyField = styled.div`
+  width: 100%;
+  height: 22px;
+  padding: 4px 8px;
+  background: #f2f2f2;
+  font-size: 10px;
+`;
+
 type MetalField = "FirstParentMaterial" | "SecondParentMaterial";
 
 export function GeneralInfo() {
@@ -53,8 +61,54 @@ export function GeneralInfo() {
   const [selectedMetalField, setSelectedMetalField] =
     useState<MetalField | null>(null);
 
+  // Get unique welding processes from all layers
+  const uniqueWeldingProcesses = useMemo(() => {
+    const processes = new Set<string>();
+    wpsData.Layers?.forEach((layer) => {
+      if (layer.Process) {
+        processes.add(layer.Process);
+      }
+    });
+    return Array.from(processes).join(", ");
+  }, [wpsData.Layers]);
+
+  // Set initial Location value based on Manufacturer
+  useEffect(() => {
+    if (wpsData.Manufacturer) {
+      const selectedOrg = organizations.find(
+        (org) => org.Alias === wpsData.Manufacturer
+      );
+      if (selectedOrg) {
+        updateWPSData({ Location: selectedOrg.Location } as Partial<
+          typeof wpsData
+        >);
+      } else {
+        updateWPSData({ Location: "" } as Partial<typeof wpsData>);
+      }
+    }
+  }, []);
+
+  // Update WeldingProcess field whenever layers change
+  useEffect(() => {
+    updateWPSData({ WeldingProcess: uniqueWeldingProcesses } as Partial<
+      typeof wpsData
+    >);
+  }, [uniqueWeldingProcesses]);
+
   const handleFieldChange = (field: keyof typeof wpsData, value: string) => {
     updateWPSData({ [field]: value } as Partial<typeof wpsData>);
+
+    // Update Location when Manufacturer changes
+    if (field === "Manufacturer") {
+      const selectedOrg = organizations.find((org) => org.Alias === value);
+      if (selectedOrg) {
+        updateWPSData({ Location: selectedOrg.Location } as Partial<
+          typeof wpsData
+        >);
+      } else {
+        updateWPSData({ Location: "" } as Partial<typeof wpsData>);
+      }
+    }
   };
 
   const handleMetalSelect = (metal: Item) => {
@@ -106,21 +160,21 @@ export function GeneralInfo() {
   ];
 
   const leftColumnFields = [
+    { key: "Manufacturer", label: "Manufacturer:" },
     { key: "Location", label: "Location:" },
     { key: "WPQR", label: "WPQR:" },
     { key: "WelderQualification", label: "Qualification of welder:" },
     { key: "WeldingProcess", label: "Welding process (EN ISO 4063):" },
     { key: "SeamType", label: "Material/Seam type:" },
     { key: "Customer", label: "Customer:" },
-    { key: "Manufacturer", label: "Manufacturer:" },
     { key: "PartNumber", label: "Part number:" },
     { key: "Drawing", label: "Drawing:" },
   ] as const;
 
   const rightColumnFields = [
     { key: "Examiner", label: "Examiner:" },
-    { key: "PreparationMethod", label: "Method of Preparation, cleaning:" },
-    { key: "RootPassPreparation", label: "Preparation for root pass:" },
+    { key: "PreparationMethod", label: "Preparation (cleaning) method:" },
+    { key: "RootPassPreparation", label: "Root pass preparation:" },
     { key: "FirstParentMaterial", label: "Base metal 1:" },
     { key: "SecondParentMaterial", label: "Base metal 2:" },
     { key: "ParentMaterialThickness", label: "Plate thickness:" },
@@ -133,6 +187,15 @@ export function GeneralInfo() {
   ] as const;
 
   const renderField = (key: keyof typeof wpsData, label: string) => {
+    if (key === "Location" || key === "WeldingProcess") {
+      return (
+        <React.Fragment key={key}>
+          <Label>{label}</Label>
+          <ReadOnlyField>{wpsData[key] as string}</ReadOnlyField>
+        </React.Fragment>
+      );
+    }
+
     if (key === "FirstParentMaterial" || key === "SecondParentMaterial") {
       const value =
         typeof wpsData[key] === "string" ? (wpsData[key] as string) : "";
@@ -153,9 +216,9 @@ export function GeneralInfo() {
     }
 
     if (key === "Manufacturer") {
-      const supervisorOptions = users.map((user) => ({
-        value: user.Name,
-        label: user.Name,
+      const manufacturerOptions = organizations.map((org) => ({
+        value: org.Alias,
+        label: org.Alias,
       }));
 
       return (
@@ -164,16 +227,16 @@ export function GeneralInfo() {
           <StyledSelect
             value={wpsData[key] as string}
             onChange={(value) => handleFieldChange(key, value as string)}
-            options={supervisorOptions}
+            options={manufacturerOptions}
           />
         </React.Fragment>
       );
     }
 
     if (key === "Customer") {
-      const customerOptions = organizations.map((org) => ({
-        value: org.Alias,
-        label: org.Alias,
+      const customerOptions = users.map((user) => ({
+        value: user.Name,
+        label: user.Name,
       }));
 
       return (
