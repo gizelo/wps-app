@@ -60,7 +60,7 @@ function ProcessSelector({
   }));
 
   const tableColumns = [
-    { key: "Code", label: "Code" },
+    { key: "Code", label: "Code", centred: true },
     { key: "Description", label: "Description" },
   ];
 
@@ -80,7 +80,7 @@ function ProcessSelector({
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         onReset={handleReset}
-        title="Select Process"
+        title="Processes"
         categories={processCategories}
         items={processItems}
         selectedId={value}

@@ -123,9 +123,9 @@ export function FillerMetal() {
 
   const tableColumns = [
     { key: "Designation", label: "Designation" },
-    { key: "Diameter", label: "Diameter" },
+    { key: "Diameter", label: "Diameter", centred: true },
     { key: "Brandname", label: "Brandname" },
-    { key: "Manufacturer", label: "Manufacturer" },
+    { key: "Manufacturer", label: "Manufacturer", centred: true },
   ];
 
   // Custom cell renderer for all fields except Passes
@@ -184,7 +184,7 @@ export function FillerMetal() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onReset={handleReset}
-        title="Select Filler Metal"
+        title="Filler Metals"
         categories={fillerCategories}
         items={fillerItems}
         selectedId={

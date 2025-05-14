@@ -153,10 +153,11 @@ export function GeneralInfo() {
   }));
 
   const tableColumns = [
-    { key: "Standard", label: "Standard" },
-    { key: "Designation", label: "Designation" },
-    { key: "MaterialNumber", label: "Material Number" },
-    { key: "MaterialName", label: "Material" },
+    { key: "GroupNumber", label: "Group", centred: true },
+    { key: "Standard", label: "Standard", centred: true },
+    { key: "Designation", label: "Designation", centred: true },
+    { key: "MaterialNumber", label: "Material Number", centred: true },
+    { key: "MaterialName", label: "Material", centred: true },
   ];
 
   const leftColumnFields = [
