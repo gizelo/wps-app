@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { collections } from "../../constants/collections";
 import { StyledSelect } from "../common/StyledSelect";
 import { StyledInput } from "../common/StyledInput";
+import { LayersModal } from "../LayersModal";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
   cursor: pointer;
@@ -36,6 +37,8 @@ export function FurtherInfo() {
   const [isRangeModalOpen, setIsRangeModalOpen] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
   const [selectedField, setSelectedField] = useState<string | null>(null);
+  const [isPassesEditOpen, setIsPassesEditOpen] = useState(false);
+  const [editLayerIndex, setEditLayerIndex] = useState<number | null>(null);
 
   const tableData: TableRow[] = [];
   wpsData.Layers.forEach((layer, layerIdx) => {
@@ -71,9 +74,9 @@ export function FurtherInfo() {
           i === 0
             ? {
                 value:
-                  layer.Passes.length === 2
-                    ? `${layer.Passes[0]}-${layer.Passes[1]}`
-                    : layer.Passes[0].toString(),
+                  layer.Passes.To !== null && layer.Passes.To !== undefined
+                    ? `${layer.Passes.From}-${layer.Passes.To}`
+                    : layer.Passes.From.toString(),
                 rowSpan: params.length,
               }
             : { value: "", rowSpan: 0 },
@@ -101,9 +104,8 @@ export function FurtherInfo() {
     const updatedFurtherInfo = { ...layer.FurtherInformation };
 
     if (field === "Passes") {
-      setSelectedRowIndex(layerIdx);
-      setSelectedField("Passes");
-      setIsRangeModalOpen(true);
+      setEditLayerIndex(layerIdx);
+      setIsPassesEditOpen(true);
       return;
     }
     if (paramField === "Tip to Work Distance [mm]") {
@@ -147,9 +149,7 @@ export function FurtherInfo() {
     if (selectedRowIndex !== null && selectedField) {
       const layer = wpsData.Layers[selectedRowIndex];
       const updatedLayer = { ...layer };
-      if (selectedField === "Passes") {
-        updatedLayer.Passes = values;
-      } else {
+      if (selectedField === "Tip to Work Distance [mm]") {
         const updatedFurtherInfo = { ...layer.FurtherInformation };
         updatedFurtherInfo.Parameters.find(
           (param) => param.Name === "TipToWorkDistance"
@@ -293,7 +293,7 @@ export function FurtherInfo() {
           </tbody>
         </table>
       </div>
-      {selectedRowIndex !== null && selectedField && (
+      {isRangeModalOpen && selectedRowIndex !== null && selectedField && (
         <RangeEditModal
           isOpen={isRangeModalOpen}
           onClose={() => {
@@ -303,31 +303,38 @@ export function FurtherInfo() {
           }}
           onSave={handleRangeSave}
           initialValues={
-            selectedField === "Passes"
-              ? wpsData.Layers[selectedRowIndex].Passes
-              : [
-                  Number(
-                    wpsData.Layers[
-                      selectedRowIndex
-                    ].FurtherInformation.Parameters.find(
-                      (param) => param.Name === "TipToWorkDistance"
-                    )!.Value.split("-")[0]
-                  ),
-                  Number(
-                    wpsData.Layers[
-                      selectedRowIndex
-                    ].FurtherInformation.Parameters.find(
-                      (param) => param.Name === "TipToWorkDistance"
-                    )!.Value.split("-")[1]
-                  ),
-                ]
+            selectedField === "Tip to Work Distance [mm]"
+              ? wpsData.Layers[
+                  selectedRowIndex
+                ].FurtherInformation.Parameters.find(
+                  (param) => param.Name === "TipToWorkDistance"
+                )
+                  ?.Value.split("-")
+                  .map(Number)
+              : undefined
           }
-          title={
-            selectedField === "Passes"
-              ? "Edit Passes"
-              : "Edit Tip to Work Distance"
-          }
-          mode={selectedField === "Passes" ? "pass" : "range"}
+          title={selectedField}
+        />
+      )}
+      {isPassesEditOpen && editLayerIndex !== null && (
+        <LayersModal
+          isOpen={isPassesEditOpen}
+          onClose={() => {
+            setIsPassesEditOpen(false);
+            setEditLayerIndex(null);
+          }}
+          singleEdit
+          layers={wpsData.Layers}
+          editIndex={editLayerIndex}
+          onSave={(newPasses) => {
+            const updatedLayer = {
+              ...wpsData.Layers[editLayerIndex],
+              Passes: newPasses,
+            };
+            updateLayer(editLayerIndex, updatedLayer);
+            setIsPassesEditOpen(false);
+            setEditLayerIndex(null);
+          }}
         />
       )}
     </>

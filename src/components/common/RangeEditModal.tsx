@@ -69,15 +69,12 @@ const ErrorMessage = styled.div`
   margin-bottom: 16px;
 `;
 
-type EditMode = "range" | "pass";
-
 interface RangeEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (values: number[]) => void;
   initialValues?: number[];
   title: string;
-  mode?: EditMode;
   allowNegative?: boolean;
 }
 
@@ -87,7 +84,6 @@ export function RangeEditModal({
   onSave,
   initialValues = [],
   title,
-  mode = "range",
   allowNegative = false,
 }: RangeEditModalProps) {
   const [value1, setValue1] = useState<string>(
@@ -112,108 +108,26 @@ export function RangeEditModal({
         onClose();
       }
     };
-
     if (isOpen) {
       window.addEventListener("keydown", handleKeyDown);
     }
-
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);
 
-  const validateValue = (
-    value: string,
-    isSecondValue: boolean = false
-  ): boolean => {
-    const num = parseFloat(value);
-    if (isNaN(num)) return false;
-
-    if (!allowNegative && num < 0) return false;
-
-    if (mode === "pass" && isSecondValue) {
-      const firstValue = parseFloat(value1);
-      if (!isNaN(firstValue) && num <= firstValue) return false;
-    }
-
-    return true;
-  };
-
-  const handleValue1Change = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setValue1(newValue);
-    setError("");
-
-    if (mode === "pass" && value2) {
-      if (!validateValue(value2, true)) {
-        setError("Second pass must be greater than first pass");
-      }
-    }
-  };
-
-  const handleValue2Change = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setValue2(newValue);
-    setError("");
-
-    if (mode === "pass" && !validateValue(newValue, true)) {
-      setError("Second pass must be greater than first pass");
-    }
-  };
-
   const handleSave = () => {
-    if (mode === "range") {
-      const lowNum = parseFloat(value1) || 0;
-      const highNum = parseFloat(value2) || lowNum || 0;
-
-      if (!allowNegative && (lowNum < 0 || highNum < 0)) {
-        setError("Values cannot be negative");
-        return;
-      }
-
-      onSave([lowNum, highNum]);
-    } else {
-      // Pass mode
-      const pass1Num = parseInt(value1);
-      const pass2Num = parseInt(value2);
-
-      if (!isNaN(pass1Num)) {
-        if (!isNaN(pass2Num)) {
-          if (pass2Num <= pass1Num) {
-            setError("Second pass must be greater than first pass");
-            return;
-          }
-          onSave([pass1Num, pass2Num]);
-        } else {
-          onSave([pass1Num]);
-        }
-      } else {
-        onSave([]);
-      }
+    const lowNum = parseFloat(value1) || 0;
+    const highNum = parseFloat(value2) || lowNum || 0;
+    if (!allowNegative && (lowNum < 0 || highNum < 0)) {
+      setError("Values cannot be negative");
+      return;
     }
+    onSave([lowNum, highNum]);
     onClose();
   };
 
   if (!isOpen) return null;
-
-  const getLabels = () => {
-    if (mode === "range") {
-      return {
-        label1: "Low Limit",
-        label2: "High Limit",
-        placeholder1: "Enter low limit",
-        placeholder2: "Enter high limit",
-      };
-    }
-    return {
-      label1: "Pass 1",
-      label2: "Pass 2 (Optional)",
-      placeholder1: "Enter pass 1",
-      placeholder2: "Enter pass 2",
-    };
-  };
-
-  const { label1, label2, placeholder1, placeholder2 } = getLabels();
 
   return (
     <ModalOverlay onClick={onClose}>
@@ -221,22 +135,22 @@ export function RangeEditModal({
         <h2 style={{ marginBottom: "16px" }}>{title}</h2>
         <InputGroup>
           <InputWrapper>
-            <Label>{label1}</Label>
+            <Label>Low Limit</Label>
             <Input
               type="number"
               value={value1}
-              onChange={handleValue1Change}
-              placeholder={placeholder1}
+              onChange={(e) => setValue1(e.target.value)}
+              placeholder="Enter low limit"
               min={allowNegative ? undefined : "0"}
             />
           </InputWrapper>
           <InputWrapper>
-            <Label>{label2}</Label>
+            <Label>High Limit</Label>
             <Input
               type="number"
               value={value2}
-              onChange={handleValue2Change}
-              placeholder={placeholder2}
+              onChange={(e) => setValue2(e.target.value)}
+              placeholder="Enter high limit"
               min={allowNegative ? undefined : "0"}
             />
           </InputWrapper>

@@ -8,6 +8,7 @@ import { RangeEditModal } from "../common/RangeEditModal";
 import styled from "styled-components";
 import { StyledSelect } from "../common/StyledSelect";
 import { collections } from "../../constants/collections";
+import { LayersModal } from "../LayersModal";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
   cursor: pointer;
@@ -98,12 +99,14 @@ export function WeldingDetails() {
   const [selectedRangeField, setSelectedRangeField] = useState<string | null>(
     null
   );
+  const [isPassesEditOpen, setIsPassesEditOpen] = useState(false);
+  const [editLayerIndex, setEditLayerIndex] = useState<number | null>(null);
 
   const tableData = wpsData.Layers.map((layer) => ({
     Passes:
-      layer.Passes.length === 2
-        ? `${layer.Passes[0]}-${layer.Passes[1]}`
-        : layer.Passes[0].toString(),
+      layer.Passes.To !== null && layer.Passes.To !== undefined
+        ? `${layer.Passes.From}-${layer.Passes.To}`
+        : `${layer.Passes.From}`,
     Position: layer.Position,
     "Pass Type": layer.PassType,
     Process: layer.Process,
@@ -125,8 +128,8 @@ export function WeldingDetails() {
 
     switch (field) {
       case "Passes":
-        setSelectedRowIndex(index);
-        setIsRangeModalOpen(true);
+        setEditLayerIndex(index);
+        setIsPassesEditOpen(true);
         break;
       case "Position":
         updatedLayer.Position = Array.isArray(value) ? value.join(", ") : value;
@@ -157,48 +160,49 @@ export function WeldingDetails() {
     }
   };
 
-  const handleRangeSave = (values: number[]) => {
+  const handleRangeSave = (
+    values: number[] | { From: number; To: number | null }
+  ) => {
     if (selectedRowIndex !== null) {
       const layer = wpsData.Layers[selectedRowIndex];
       const updatedLayer = { ...layer };
-
       if (selectedRangeField) {
         switch (selectedRangeField) {
           case "Current [A]":
             updatedLayer.Current = {
-              LowLimit: values[0],
-              HighLimit: values[1],
+              LowLimit: (values as number[])[0],
+              HighLimit: (values as number[])[1],
             };
             break;
           case "Voltage [V]":
             updatedLayer.Voltage = {
-              LowLimit: values[0],
-              HighLimit: values[1],
+              LowLimit: (values as number[])[0],
+              HighLimit: (values as number[])[1],
             };
             break;
           case "Wire Feed Speed [m/min]":
             updatedLayer.WireFeedSpeed = {
-              LowLimit: values[0],
-              HighLimit: values[1],
+              LowLimit: (values as number[])[0],
+              HighLimit: (values as number[])[1],
             };
             break;
           case "Travel Speed [cm/min]":
             updatedLayer.TravelSpeed = {
-              LowLimit: values[0],
-              HighLimit: values[1],
+              LowLimit: (values as number[])[0],
+              HighLimit: (values as number[])[1],
             };
             break;
           case "Heat Input [kJ/cm]":
             updatedLayer.HeatInput = {
-              LowLimit: values[0],
-              HighLimit: values[1],
+              LowLimit: (values as number[])[0],
+              HighLimit: (values as number[])[1],
             };
             break;
         }
       } else {
-        updatedLayer.Passes = values;
+        // Passes
+        updatedLayer.Passes = values as { From: number; To: number | null };
       }
-
       updateLayer(selectedRowIndex, updatedLayer);
     }
     setIsRangeModalOpen(false);
@@ -336,12 +340,30 @@ export function WeldingDetails() {
                     ? wpsData.Layers[selectedRowIndex].TravelSpeed.HighLimit
                     : wpsData.Layers[selectedRowIndex].HeatInput.HighLimit,
                 ]
-              : wpsData.Layers[selectedRowIndex].Passes
+              : undefined
           }
-          title={
-            selectedRangeField ? `Edit ${selectedRangeField}` : "Edit Passes"
-          }
-          mode={selectedRangeField ? "range" : "pass"}
+          title={selectedRangeField || "Edit Range"}
+        />
+      )}
+      {isPassesEditOpen && editLayerIndex !== null && (
+        <LayersModal
+          isOpen={isPassesEditOpen}
+          onClose={() => {
+            setIsPassesEditOpen(false);
+            setEditLayerIndex(null);
+          }}
+          singleEdit
+          layers={wpsData.Layers}
+          editIndex={editLayerIndex}
+          onSave={(newPasses) => {
+            const updatedLayer = {
+              ...wpsData.Layers[editLayerIndex],
+              Passes: newPasses,
+            };
+            updateLayer(editLayerIndex, updatedLayer);
+            setIsPassesEditOpen(false);
+            setEditLayerIndex(null);
+          }}
         />
       )}
     </>

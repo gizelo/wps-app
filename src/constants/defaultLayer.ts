@@ -1,5 +1,8 @@
 export const DEFAULT_LAYER = {
-  Passes: [1],
+  Passes: {
+    From: 1,
+    To: null,
+  },
   Position: "",
   PassType: "",
   Process: "",

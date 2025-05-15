@@ -37,7 +37,10 @@ export interface FurtherInformation {
 }
 
 export interface Layer {
-  Passes: number[];
+  Passes: {
+    From: number;
+    To: number | null;
+  };
   Position: string;
   PassType: string;
   Process: string;

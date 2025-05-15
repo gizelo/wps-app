@@ -5,7 +5,7 @@ import { SelectionModal, Category, Item } from "../common/SelectionModal";
 import styled from "styled-components";
 import { fillerGroups } from "../../constants/fillerGroups";
 import { fillers } from "../../constants/fillers";
-import { RangeEditModal } from "../common/RangeEditModal";
+import { LayersModal } from "../LayersModal";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
   white-space: nowrap;
@@ -34,14 +34,15 @@ const headers = [
 export function FillerMetal() {
   const { wpsData, updateLayer } = useWPS();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isRangeModalOpen, setIsRangeModalOpen] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
+  const [isPassesEditOpen, setIsPassesEditOpen] = useState(false);
+  const [editLayerIndex, setEditLayerIndex] = useState<number | null>(null);
 
   const tableData = wpsData.Layers.map((layer) => ({
     Passes:
-      layer.Passes.length === 2
-        ? `${layer.Passes[0]}-${layer.Passes[1]}`
-        : layer.Passes[0].toString(),
+      layer.Passes.To !== null && layer.Passes.To !== undefined
+        ? `${layer.Passes.From}-${layer.Passes.To}`
+        : `${layer.Passes.From}`,
     Designation: layer.FillerMetal.Designation,
     Diameter: layer.FillerMetal.Diameter.toString(),
     Brandname: layer.FillerMetal.Brandname,
@@ -50,25 +51,14 @@ export function FillerMetal() {
 
   const handleUpdate = (index: number, field: string) => {
     if (field === "Passes") {
-      setSelectedRowIndex(index);
-      setIsRangeModalOpen(true);
+      setEditLayerIndex(index);
+      setIsPassesEditOpen(true);
       return;
     }
 
     // For other fields, open the selection modal
     setSelectedRowIndex(index);
     setIsModalOpen(true);
-  };
-
-  const handleRangeSave = (values: number[]) => {
-    if (selectedRowIndex !== null) {
-      const layer = wpsData.Layers[selectedRowIndex];
-      const updatedLayer = { ...layer };
-      updatedLayer.Passes = values;
-      updateLayer(selectedRowIndex, updatedLayer);
-    }
-    setIsRangeModalOpen(false);
-    setSelectedRowIndex(null);
   };
 
   const handleFillerSelect = (filler: Item) => {
@@ -195,17 +185,25 @@ export function FillerMetal() {
         onSelect={handleFillerSelect}
         tableColumns={tableColumns}
       />
-      {selectedRowIndex !== null && (
-        <RangeEditModal
-          isOpen={isRangeModalOpen}
+      {isPassesEditOpen && editLayerIndex !== null && (
+        <LayersModal
+          isOpen={isPassesEditOpen}
           onClose={() => {
-            setIsRangeModalOpen(false);
-            setSelectedRowIndex(null);
+            setIsPassesEditOpen(false);
+            setEditLayerIndex(null);
           }}
-          onSave={handleRangeSave}
-          initialValues={wpsData.Layers[selectedRowIndex].Passes}
-          title="Edit Passes"
-          mode="pass"
+          singleEdit
+          layers={wpsData.Layers}
+          editIndex={editLayerIndex}
+          onSave={(newPasses) => {
+            const updatedLayer = {
+              ...wpsData.Layers[editLayerIndex],
+              Passes: newPasses,
+            };
+            updateLayer(editLayerIndex, updatedLayer);
+            setIsPassesEditOpen(false);
+            setEditLayerIndex(null);
+          }}
         />
       )}
     </>

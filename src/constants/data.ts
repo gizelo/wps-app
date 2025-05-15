@@ -26,7 +26,10 @@ export const DATA = {
   Remarks: "",
   Layers: [
     {
-      Passes: [1, 4],
+      Passes: {
+        From: 1,
+        To: 4,
+      },
       Position: "PA",
       PassType: "Root pass",
       Process: "131",
