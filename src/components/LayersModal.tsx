@@ -50,7 +50,7 @@ const Th = styled.th`
   border: 1px solid #ddd;
   padding: 8px;
   text-align: left;
-  background: #f8f9fa;
+  background: #f2f2f2;
   font-weight: normal;
 `;
 
@@ -59,11 +59,7 @@ const Td = styled.td`
   padding: 8px;
 `;
 
-const Row = styled.tr`
-  &:hover {
-    background: #f8f9fa;
-  }
-`;
+const Row = styled.tr``;
 
 const Button = styled.button<{ primary?: boolean }>`
   background: ${(props) => (props.primary ? "#007bff" : "#f0f0f0")};
