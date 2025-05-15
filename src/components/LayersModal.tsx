@@ -297,23 +297,21 @@ export function LayersModal({
         <Table>
           <thead>
             <tr>
-              <Th style={{ textAlign: "center" }}>#</Th>
+              <Th rowSpan={2} style={{ textAlign: "center" }}>
+                #
+              </Th>
               <Th colSpan={2} style={{ textAlign: "center" }}>
                 Passes
               </Th>
-              {!singleEdit && <Th style={{ textAlign: "center" }} />}
-              {!singleEdit && <Th style={{ textAlign: "center" }} />}
-              {!singleEdit && <Th />}
-              {!singleEdit && <Th />}
+              {!singleEdit && (
+                <Th colSpan={4} rowSpan={2} style={{ textAlign: "center" }}>
+                  Actions
+                </Th>
+              )}
             </tr>
             <tr>
-              <Th />
               <Th style={{ textAlign: "center" }}>From</Th>
               <Th style={{ textAlign: "center" }}>To</Th>
-              {!singleEdit && <Th />}
-              {!singleEdit && <Th />}
-              {!singleEdit && <Th />}
-              {!singleEdit && <Th />}
             </tr>
           </thead>
           <tbody>
