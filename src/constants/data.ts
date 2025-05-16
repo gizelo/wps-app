@@ -67,9 +67,11 @@ export const DATA = {
       FillerMetal: {
         Brandname: "MA-1070 (Al99,7)",
         Manufacturer: "MIGAL.CO",
-        Description: "Rod/Wire electrode for Aluminium",
-        Designation: "EN ISO 18273: S Al 1070 (Al99,7) 3.0259",
-        Diameter: 1.2,
+        MaterialNumber: "3.0259",
+        Description: "Rod/Wire electrode for Aluminum",
+        Standard: "EN ISO 18273",
+        StandardDesignation: "S Al 1070 (Al99,7)",
+        Size: "0.8",
       },
       ShieldingGas: {
         Designation: "ISO 14175 I1: ArCO - 5/4",

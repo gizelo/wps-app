@@ -30,9 +30,11 @@ export const DEFAULT_LAYER = {
   FillerMetal: {
     Brandname: "",
     Manufacturer: "",
+    MaterialNumber: "",
     Description: "",
-    Designation: "",
-    Diameter: 0,
+    Standard: "",
+    StandardDesignation: "",
+    Size: "",
   },
   ShieldingGas: {
     Designation: "",

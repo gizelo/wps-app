@@ -1,6 +1,6 @@
 export const fillerGroups = [
   {
-    Description: "Rod/Wire electrode for Aluminium",
+    Description: "Rod/Wire electrode for Aluminum",
     Manufacturers: ["MIGAL.CO"],
   },
   {

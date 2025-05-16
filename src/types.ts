@@ -12,9 +12,11 @@ export interface Limit {
 export interface FillerMetal {
   Brandname: string;
   Manufacturer: string;
+  MaterialNumber: string;
   Description: string;
-  Designation: string;
-  Diameter: number;
+  Standard: string;
+  StandardDesignation: string;
+  Size: string;
 }
 
 export interface ShieldingGas {

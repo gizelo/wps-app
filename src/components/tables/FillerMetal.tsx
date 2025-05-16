@@ -25,10 +25,13 @@ const SelectorButton = styled.div<{ hasValue: boolean }>`
 
 const headers = [
   "Passes",
-  "Designation",
-  "Diameter",
+  "Standard Designation",
+  "Size",
   "Brandname",
   "Manufacturer",
+  "Material Number",
+  "Description",
+  "Standard",
 ];
 
 export function FillerMetal() {
@@ -43,10 +46,13 @@ export function FillerMetal() {
       layer.Passes.To !== null && layer.Passes.To !== undefined
         ? `${layer.Passes.From}-${layer.Passes.To}`
         : `${layer.Passes.From}`,
-    Designation: layer.FillerMetal.Designation,
-    Diameter: layer.FillerMetal.Diameter.toString(),
+    "Standard Designation": layer.FillerMetal.StandardDesignation,
+    Size: layer.FillerMetal.Size,
     Brandname: layer.FillerMetal.Brandname,
     Manufacturer: layer.FillerMetal.Manufacturer,
+    "Material Number": layer.FillerMetal.MaterialNumber,
+    Description: layer.FillerMetal.Description,
+    Standard: layer.FillerMetal.Standard,
   }));
 
   const handleUpdate = (index: number, field: string) => {
@@ -56,7 +62,6 @@ export function FillerMetal() {
       return;
     }
 
-    // For other fields, open the selection modal
     setSelectedRowIndex(index);
     setIsModalOpen(true);
   };
@@ -66,11 +71,13 @@ export function FillerMetal() {
       const layer = wpsData.Layers[selectedRowIndex];
       const updatedLayer = { ...layer };
       updatedLayer.FillerMetal = {
-        Designation: filler.Designation as string,
-        Diameter: filler.Diameter as number,
-        Brandname: filler.Brandname as string,
-        Manufacturer: filler.Manufacturer as string,
-        Description: filler.Description as string,
+        StandardDesignation: String(filler.StandardDesignation || ""),
+        Size: String(filler.Size || ""),
+        Brandname: String(filler.Brandname || ""),
+        Manufacturer: String(filler.Manufacturer || ""),
+        MaterialNumber: String(filler.MaterialNumber || ""),
+        Description: String(filler.Description || ""),
+        Standard: String(filler.Standard || ""),
       };
       updateLayer(selectedRowIndex, updatedLayer);
     }
@@ -82,11 +89,13 @@ export function FillerMetal() {
       const layer = wpsData.Layers[selectedRowIndex];
       const updatedLayer = { ...layer };
       updatedLayer.FillerMetal = {
-        Designation: "",
-        Diameter: 0,
+        StandardDesignation: "",
+        Size: "",
         Brandname: "",
         Manufacturer: "",
+        MaterialNumber: "",
         Description: "",
+        Standard: "",
       };
       updateLayer(selectedRowIndex, updatedLayer);
     }
@@ -106,16 +115,27 @@ export function FillerMetal() {
 
   // Create items from fillers
   const fillerItems: Item[] = fillers.map((filler) => ({
-    id: filler.Designation,
-    categoryId: `${filler.Description}-${filler.Manufacturer}`,
-    ...filler,
+    id: String(filler.StandardDesignation || ""),
+    categoryId: `${String(filler.Description || "")}-${String(
+      filler.Manufacturer || ""
+    )}`,
+    Brandname: String(filler.Brandname || ""),
+    Manufacturer: String(filler.Manufacturer || ""),
+    MaterialNumber: String(filler.MaterialNumber || ""),
+    Description: String(filler.Description || ""),
+    Standard: String(filler.Standard || ""),
+    StandardDesignation: String(filler.StandardDesignation || ""),
+    Size: String(filler.Size || ""),
   }));
 
   const tableColumns = [
-    { key: "Designation", label: "Designation" },
-    { key: "Diameter", label: "Diameter", centred: true },
+    { key: "StandardDesignation", label: "Standard Designation" },
+    { key: "Size", label: "Size", centred: true },
     { key: "Brandname", label: "Brandname" },
     { key: "Manufacturer", label: "Manufacturer", centred: true },
+    { key: "MaterialNumber", label: "Material Number", centred: true },
+    { key: "Description", label: "Description" },
+    { key: "Standard", label: "Standard" },
   ];
 
   // Custom cell renderer for all fields except Passes
@@ -128,20 +148,20 @@ export function FillerMetal() {
         {String(value)}
       </SelectorButton>
     ),
-    Designation: (value: string | number, rowIndex: number) => (
+    "Standard Designation": (value: string | number, rowIndex: number) => (
       <SelectorButton
         hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Designation")}
+        onClick={() => handleUpdate(rowIndex, "Standard Designation")}
       >
         {String(value)}
       </SelectorButton>
     ),
-    Diameter: (value: string | number, rowIndex: number) => (
+    Size: (value: string | number, rowIndex: number) => (
       <SelectorButton
         hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Diameter")}
+        onClick={() => handleUpdate(rowIndex, "Size")}
       >
-        {value}
+        {String(value)}
       </SelectorButton>
     ),
     Brandname: (value: string | number, rowIndex: number) => (
@@ -156,6 +176,30 @@ export function FillerMetal() {
       <SelectorButton
         hasValue={!!value}
         onClick={() => handleUpdate(rowIndex, "Manufacturer")}
+      >
+        {String(value)}
+      </SelectorButton>
+    ),
+    "Material Number": (value: string | number, rowIndex: number) => (
+      <SelectorButton
+        hasValue={!!value}
+        onClick={() => handleUpdate(rowIndex, "Material Number")}
+      >
+        {String(value)}
+      </SelectorButton>
+    ),
+    Description: (value: string | number, rowIndex: number) => (
+      <SelectorButton
+        hasValue={!!value}
+        onClick={() => handleUpdate(rowIndex, "Description")}
+      >
+        {String(value)}
+      </SelectorButton>
+    ),
+    Standard: (value: string | number, rowIndex: number) => (
+      <SelectorButton
+        hasValue={!!value}
+        onClick={() => handleUpdate(rowIndex, "Standard")}
       >
         {String(value)}
       </SelectorButton>
@@ -179,7 +223,7 @@ export function FillerMetal() {
         items={fillerItems}
         selectedId={
           selectedRowIndex !== null
-            ? wpsData.Layers[selectedRowIndex].FillerMetal.Designation
+            ? wpsData.Layers[selectedRowIndex].FillerMetal.StandardDesignation
             : undefined
         }
         onSelect={handleFillerSelect}
