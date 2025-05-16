@@ -3,7 +3,7 @@ export const DEFAULT_LAYER = {
     From: 1,
     To: null,
   },
-  Position: "",
+  Positions: "",
   PassType: "",
   Process: "",
   Current: {

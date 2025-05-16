@@ -445,7 +445,7 @@ export function SelectionModal({
                 ▶
               </ExpandIcon>
             )}
-            <span style={{ fontSize: "1.2em" }}>{category.id}</span>
+            <span style={{ fontSize: "1.2em" }}>{category.label}</span>
           </CategoryItem>
           {category.children && expandedItems.has(category.id) && (
             <NestedCategories>

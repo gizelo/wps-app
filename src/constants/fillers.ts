@@ -15,7 +15,7 @@ export const fillers = [
     Description: "Rod/Wire electrode for Aluminum",
     Standard: "EN ISO 18273",
     StandardDesignation: "S Al 1450 (Al99,5Ti)",
-    Size: 0.8,
+    Size: "0.8",
   },
   {
     Brandname: "MA-2319 (AlCu6MnZrTi)",
@@ -130,8 +130,8 @@ export const fillers = [
     Manufacturer: "MIGAL.CO",
     MaterialNumber: "",
     Description: "Rod/Wire electrode for Aluminum",
-    Standard: null,
-    StandardDesignation: null,
+    Standard: "",
+    StandardDesignation: "",
     Size: "0.8",
   },
   {

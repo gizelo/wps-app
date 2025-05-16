@@ -30,7 +30,7 @@ export const DATA = {
         From: 1,
         To: 4,
       },
-      Position: "PA",
+      Positions: "PA",
       PassType: "Root pass",
       Process: "131",
       Current: {

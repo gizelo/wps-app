@@ -27,7 +27,7 @@ const SelectorButton = styled.div<{ hasValue: boolean }>`
 
 const headers = [
   "Passes",
-  "Position",
+  "Positions",
   "Pass Type",
   "Process",
   "Current [A]",
@@ -107,7 +107,7 @@ export function WeldingDetails() {
       layer.Passes.To !== null && layer.Passes.To !== undefined
         ? `${layer.Passes.From}-${layer.Passes.To}`
         : `${layer.Passes.From}`,
-    Position: layer.Position,
+    Positions: layer.Positions,
     "Pass Type": layer.PassType,
     Process: layer.Process,
     "Current [A]": `${layer.Current.LowLimit}-${layer.Current.HighLimit}`,
@@ -131,8 +131,10 @@ export function WeldingDetails() {
         setEditLayerIndex(index);
         setIsPassesEditOpen(true);
         break;
-      case "Position":
-        updatedLayer.Position = Array.isArray(value) ? value.join(", ") : value;
+      case "Positions":
+        updatedLayer.Positions = Array.isArray(value)
+          ? value.join(", ")
+          : value;
         break;
       case "Pass Type":
         updatedLayer.PassType = value as string;
@@ -217,10 +219,10 @@ export function WeldingDetails() {
         onChange={(code) => handleUpdate(rowIndex, "Process", code)}
       />
     ),
-    Position: (value: string, rowIndex: number) => (
+    Positions: (value: string, rowIndex: number) => (
       <StyledSelect
         value={value ? value.split(", ") : []}
-        onChange={(newValue) => handleUpdate(rowIndex, "Position", newValue)}
+        onChange={(newValue) => handleUpdate(rowIndex, "Positions", newValue)}
         options={collections.WeldingPositions.map((pos) => ({
           value: pos,
           label: pos,

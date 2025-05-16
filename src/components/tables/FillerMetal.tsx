@@ -25,13 +25,10 @@ const SelectorButton = styled.div<{ hasValue: boolean }>`
 
 const headers = [
   "Passes",
-  "Standard Designation",
-  "Size",
+  "Designation",
   "Brandname",
   "Manufacturer",
-  "Material Number",
-  "Description",
-  "Standard",
+  "Size [mm]",
 ];
 
 export function FillerMetal() {
@@ -46,13 +43,13 @@ export function FillerMetal() {
       layer.Passes.To !== null && layer.Passes.To !== undefined
         ? `${layer.Passes.From}-${layer.Passes.To}`
         : `${layer.Passes.From}`,
-    "Standard Designation": layer.FillerMetal.StandardDesignation,
-    Size: layer.FillerMetal.Size,
+    Designation:
+      `${layer.FillerMetal.Standard}: ${layer.FillerMetal.StandardDesignation} ${layer.FillerMetal.MaterialNumber}`
+        .replace(/: $/, "")
+        .replace(/ $/, ""),
     Brandname: layer.FillerMetal.Brandname,
     Manufacturer: layer.FillerMetal.Manufacturer,
-    "Material Number": layer.FillerMetal.MaterialNumber,
-    Description: layer.FillerMetal.Description,
-    Standard: layer.FillerMetal.Standard,
+    "Size [mm]": layer.FillerMetal.Size,
   }));
 
   const handleUpdate = (index: number, field: string) => {
@@ -128,17 +125,6 @@ export function FillerMetal() {
     Size: String(filler.Size || ""),
   }));
 
-  const tableColumns = [
-    { key: "StandardDesignation", label: "Standard Designation" },
-    { key: "Size", label: "Size", centred: true },
-    { key: "Brandname", label: "Brandname" },
-    { key: "Manufacturer", label: "Manufacturer", centred: true },
-    { key: "MaterialNumber", label: "Material Number", centred: true },
-    { key: "Description", label: "Description" },
-    { key: "Standard", label: "Standard" },
-  ];
-
-  // Custom cell renderer for all fields except Passes
   const customRenderers = {
     Passes: (value: string | number, rowIndex: number) => (
       <SelectorButton
@@ -148,18 +134,10 @@ export function FillerMetal() {
         {String(value)}
       </SelectorButton>
     ),
-    "Standard Designation": (value: string | number, rowIndex: number) => (
+    Designation: (value: string | number, rowIndex: number) => (
       <SelectorButton
         hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Standard Designation")}
-      >
-        {String(value)}
-      </SelectorButton>
-    ),
-    Size: (value: string | number, rowIndex: number) => (
-      <SelectorButton
-        hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Size")}
+        onClick={() => handleUpdate(rowIndex, "Designation")}
       >
         {String(value)}
       </SelectorButton>
@@ -180,31 +158,24 @@ export function FillerMetal() {
         {String(value)}
       </SelectorButton>
     ),
-    "Material Number": (value: string | number, rowIndex: number) => (
+    "Size [mm]": (value: string | number, rowIndex: number) => (
       <SelectorButton
         hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Material Number")}
-      >
-        {String(value)}
-      </SelectorButton>
-    ),
-    Description: (value: string | number, rowIndex: number) => (
-      <SelectorButton
-        hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Description")}
-      >
-        {String(value)}
-      </SelectorButton>
-    ),
-    Standard: (value: string | number, rowIndex: number) => (
-      <SelectorButton
-        hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Standard")}
+        onClick={() => handleUpdate(rowIndex, "Size [mm]")}
       >
         {String(value)}
       </SelectorButton>
     ),
   };
+
+  const tableColumns = [
+    { key: "Brandname", label: "Brandname" },
+    { key: "Manufacturer", label: "Manufacturer", centred: true },
+    { key: "Standard", label: "Standard" },
+    { key: "StandardDesignation", label: "Designation" },
+    { key: "MaterialNumber", label: "# Material", centred: true },
+    { key: "Size", label: "Size [mm]", centred: true },
+  ];
 
   return (
     <>

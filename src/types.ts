@@ -43,7 +43,7 @@ export interface Layer {
     From: number;
     To: number | null;
   };
-  Position: string;
+  Positions: string;
   PassType: string;
   Process: string;
   Current: Limit;
