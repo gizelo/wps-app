@@ -8,6 +8,7 @@ import {
 } from "react";
 import styled from "styled-components";
 import React from "react";
+import { FillerMetalDatasheetModal } from "./FillerMetalDatasheetModal";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -40,10 +41,16 @@ const ModalHeader = styled.div`
   margin-bottom: 20px;
 `;
 
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 8px;
+const SearchContainer = styled.div`
+  display: flex;
+  gap: 10px;
   margin-bottom: 15px;
+  align-items: center;
+`;
+
+const SearchInput = styled.input`
+  flex: 1;
+  padding: 8px;
   border: 1px solid #b1b1b1;
   border-radius: 4px;
 `;
@@ -211,6 +218,8 @@ interface SelectionModalProps {
   onSelect: (item: Item) => void;
   searchable?: boolean;
   tableColumns: { key: string; label: string; centred?: boolean }[];
+  layerIndex?: number;
+  isFillerSelection?: boolean;
 }
 
 interface TableProps {
@@ -292,6 +301,8 @@ export function SelectionModal({
   onSelect,
   searchable = true,
   tableColumns,
+  layerIndex,
+  isFillerSelection = false,
 }: SelectionModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -299,10 +310,22 @@ export function SelectionModal({
     null
   );
   const [tempSelected, setTempSelected] = useState<Item | null>(null);
+  const [isDatasheetOpen, setIsDatasheetOpen] = useState(false);
 
   const handleTableItemSelect = useCallback((item: Item) => {
     setTempSelected(item);
   }, []);
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchTerm("");
+      setExpandedItems(new Set());
+      setSelectedCategory(null);
+      setTempSelected(null);
+      setIsDatasheetOpen(false);
+    }
+  }, [isOpen]);
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -361,15 +384,6 @@ export function SelectionModal({
   }, [isOpen, selectedId, items, categories]);
 
   useEffect(() => {
-    if (!isOpen) {
-      // Reset selection when modal closes
-      setTempSelected(null);
-      setSelectedCategory(null);
-      setExpandedItems(new Set());
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -408,6 +422,17 @@ export function SelectionModal({
     if (tempSelected) {
       onSelect(tempSelected);
     }
+    onClose();
+  };
+
+  const handleDatasheetOpen = () => {
+    if (tempSelected) {
+      setIsDatasheetOpen(true);
+    }
+  };
+
+  const handleDatasheetApply = () => {
+    setIsDatasheetOpen(false);
     onClose();
   };
 
@@ -464,15 +489,22 @@ export function SelectionModal({
         </ModalHeader>
 
         {searchable && (
-          <SearchInput
-            type="text"
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setSelectedCategory(null);
-            }}
-          />
+          <SearchContainer>
+            <SearchInput
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setSelectedCategory(null);
+              }}
+            />
+            {isFillerSelection && (
+              <Button onClick={handleDatasheetOpen} disabled={!tempSelected}>
+                Datasheet
+              </Button>
+            )}
+          </SearchContainer>
         )}
 
         <ContentContainer>
@@ -500,6 +532,17 @@ export function SelectionModal({
           <Button onClick={onReset}>Reset</Button>
           <Button onClick={onClose}>Cancel</Button>
         </ModalFooter>
+
+        {tempSelected && layerIndex !== undefined && (
+          <FillerMetalDatasheetModal
+            isOpen={isDatasheetOpen}
+            onClose={() => setIsDatasheetOpen(false)}
+            onApply={handleDatasheetApply}
+            brandname={String(tempSelected.Brandname || "")}
+            manufacturer={String(tempSelected.Manufacturer || "")}
+            layerIndex={layerIndex}
+          />
+        )}
       </ModalContent>
     </ModalOverlay>
   );

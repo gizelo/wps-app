@@ -112,7 +112,7 @@ export function FillerMetal() {
 
   // Create items from fillers
   const fillerItems: Item[] = fillers.map((filler) => ({
-    id: String(filler.StandardDesignation || ""),
+    id: String(`${filler.Brandname} ${filler.Manufacturer}`),
     categoryId: `${String(filler.Description || "")}-${String(
       filler.Manufacturer || ""
     )}`,
@@ -169,11 +169,11 @@ export function FillerMetal() {
   };
 
   const tableColumns = [
-    { key: "Brandname", label: "Brandname" },
     { key: "Manufacturer", label: "Manufacturer", centred: true },
+    { key: "Brandname", label: "Brandname" },
     { key: "Standard", label: "Standard" },
     { key: "StandardDesignation", label: "Designation" },
-    { key: "MaterialNumber", label: "# Material", centred: true },
+    { key: "MaterialNumber", label: "Material #", centred: true },
     { key: "Size", label: "Size [mm]", centred: true },
   ];
 
@@ -194,11 +194,13 @@ export function FillerMetal() {
         items={fillerItems}
         selectedId={
           selectedRowIndex !== null
-            ? wpsData.Layers[selectedRowIndex].FillerMetal.StandardDesignation
+            ? `${wpsData.Layers[selectedRowIndex].FillerMetal.Brandname} ${wpsData.Layers[selectedRowIndex].FillerMetal.Manufacturer}`
             : undefined
         }
         onSelect={handleFillerSelect}
         tableColumns={tableColumns}
+        layerIndex={selectedRowIndex || 0}
+        isFillerSelection
       />
       {isPassesEditOpen && editLayerIndex !== null && (
         <LayersModal
