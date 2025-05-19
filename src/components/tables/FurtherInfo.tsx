@@ -8,6 +8,8 @@ import { StyledInput } from "../common/StyledInput";
 import { LayersModal } from "../LayersModal";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
+  white-space: nowrap;
+  height: 22px;
   cursor: pointer;
   padding: 4px;
   background: #f2f2f2;

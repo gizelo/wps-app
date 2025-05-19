@@ -210,7 +210,7 @@ export function GeneralInfo() {
               setIsMetalModalOpen(true);
             }}
           >
-            {value || ""}
+            {value}
           </SelectorButton>
         </React.Fragment>
       );

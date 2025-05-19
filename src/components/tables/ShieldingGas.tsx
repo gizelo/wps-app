@@ -4,8 +4,13 @@ import { useState } from "react";
 import { RangeEditModal, DisplayMode } from "../common/RangeEditModal";
 import styled from "styled-components";
 import { LayersModal } from "../LayersModal";
+import { SelectionModal, Category, Item } from "../common/SelectionModal";
+import { shieldingGasGroups } from "../../constants/shieldingGasGroups";
+import { shieldingGases } from "../../constants/shieldingGases";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
+  white-space: nowrap;
+  height: 22px;
   cursor: pointer;
   padding: 4px;
   background: #f2f2f2;
@@ -48,6 +53,33 @@ const formatRangeValue = (limit: {
   }
 };
 
+const createGasCategories = (): Category[] => {
+  return shieldingGasGroups.flatMap((group) =>
+    group.Subgroups.map((subgroup) => ({
+      id: subgroup.Symbol,
+      label: subgroup.Symbol,
+      description: subgroup.Description,
+      children: subgroup.Manufacturers.map((manufacturer) => ({
+        id: `${subgroup.Symbol}-${manufacturer}`,
+        label: manufacturer,
+      })),
+    }))
+  );
+};
+
+const createGasItems = (): Item[] => {
+  return shieldingGases.map((gas) => ({
+    id: `${gas.Manufacturer}-${gas.Brandname}`,
+    categoryId: `${gas.Symbol}-${gas.Manufacturer}`,
+    Manufacturer: gas.Manufacturer,
+    Brandname: gas.Brandname,
+    Standard: gas.Standard,
+    Symbol: gas.Symbol,
+    Composition: gas.NominalComposition,
+    ChemicalComposition: gas.ChemicalComposition,
+  }));
+};
+
 export function ShieldingGas() {
   const { wpsData, updateLayer } = useWPS();
   const [isRangeModalOpen, setIsRangeModalOpen] = useState(false);
@@ -55,18 +87,26 @@ export function ShieldingGas() {
   const [selectedField, setSelectedField] = useState<string | null>(null);
   const [isPassesEditOpen, setIsPassesEditOpen] = useState(false);
   const [editLayerIndex, setEditLayerIndex] = useState<number | null>(null);
+  const [isGasModalOpen, setIsGasModalOpen] = useState(false);
 
   const tableData = wpsData.Layers.map((layer) => ({
     Passes:
       layer.Passes.To !== null && layer.Passes.To !== undefined
         ? `${layer.Passes.From}-${layer.Passes.To}`
         : `${layer.Passes.From}`,
-    Designation: layer.ShieldingGas.Designation,
+    Designation:
+      [
+        layer.ShieldingGas.Standard,
+        layer.ShieldingGas.Symbol,
+        layer.ShieldingGas.NominalComposition,
+      ]
+        .filter(Boolean)
+        .join(" – ") || "",
     Brandname: layer.ShieldingGas.Brandname,
     Manufacturer: layer.ShieldingGas.Manufacturer,
     "Flow Rate [l/min]": formatRangeValue(layer.ShieldingGas.FlowRate),
-    "Preflow Time [s]": layer.ShieldingGas.PreflowTime.toString(),
-    "Postflow Time [s]": layer.ShieldingGas.PostflowTime.toString(),
+    "Preflow Time [s]": layer.ShieldingGas.PreflowTime?.toString() ?? "",
+    "Postflow Time [s]": layer.ShieldingGas.PostflowTime?.toString() ?? "",
   }));
 
   const handleUpdate = (
@@ -85,33 +125,76 @@ export function ShieldingGas() {
       setIsRangeModalOpen(true);
       return;
     }
+    if (["Designation", "Brandname", "Manufacturer"].includes(field)) {
+      setSelectedRowIndex(index);
+      setIsGasModalOpen(true);
+      return;
+    }
 
     const layer = wpsData.Layers[index];
     const updatedLayer = { ...layer };
     const updatedShieldingGas = { ...layer.ShieldingGas };
+    const numValue =
+      typeof value === "string" ? value.trim() : value.toString();
 
     switch (field) {
-      case "Designation":
-        updatedShieldingGas.Designation = value as string;
-        break;
-      case "Brandname":
-        updatedShieldingGas.Brandname = value as string;
-        break;
-      case "Manufacturer":
-        updatedShieldingGas.Manufacturer = value as string;
-        break;
       case "Preflow Time [s]":
-        updatedShieldingGas.PreflowTime =
-          typeof value === "string" ? parseInt(value) : value;
-        break;
       case "Postflow Time [s]":
-        updatedShieldingGas.PostflowTime =
-          typeof value === "string" ? parseInt(value) : value;
+        if (numValue === "") {
+          if (field === "Preflow Time [s]") {
+            updatedShieldingGas.PreflowTime = null;
+          } else {
+            updatedShieldingGas.PostflowTime = null;
+          }
+        } else {
+          const parsedValue = parseInt(numValue);
+          if (!isNaN(parsedValue)) {
+            if (field === "Preflow Time [s]") {
+              updatedShieldingGas.PreflowTime = parsedValue;
+            } else {
+              updatedShieldingGas.PostflowTime = parsedValue;
+            }
+          }
+        }
         break;
     }
 
     updatedLayer.ShieldingGas = updatedShieldingGas;
     updateLayer(index, updatedLayer);
+  };
+
+  const handleGasSelect = (gas: Item) => {
+    if (selectedRowIndex !== null) {
+      const layer = wpsData.Layers[selectedRowIndex];
+      const updatedLayer = { ...layer };
+      updatedLayer.ShieldingGas = {
+        ...updatedLayer.ShieldingGas,
+        Standard: String(gas.Standard || ""),
+        Symbol: String(gas.Symbol || ""),
+        NominalComposition: String(gas.Composition || ""),
+        Brandname: String(gas.Brandname || ""),
+        Manufacturer: String(gas.Manufacturer || ""),
+      };
+      updateLayer(selectedRowIndex, updatedLayer);
+    }
+    setIsGasModalOpen(false);
+  };
+
+  const handleGasReset = () => {
+    if (selectedRowIndex !== null) {
+      const layer = wpsData.Layers[selectedRowIndex];
+      const updatedLayer = { ...layer };
+      updatedLayer.ShieldingGas = {
+        ...updatedLayer.ShieldingGas,
+        Standard: "",
+        Symbol: "",
+        NominalComposition: "",
+        Brandname: "",
+        Manufacturer: "",
+      };
+      updateLayer(selectedRowIndex, updatedLayer);
+    }
+    setIsGasModalOpen(false);
   };
 
   const handleRangeSave = (values: {
@@ -144,7 +227,7 @@ export function ShieldingGas() {
         hasValue={!!value}
         onClick={() => handleUpdate(rowIndex, "Passes", value)}
       >
-        {value || "Edit pass"}
+        {value}
       </SelectorButton>
     ),
     "Flow Rate [l/min]": (value: string, rowIndex: number) => (
@@ -152,10 +235,42 @@ export function ShieldingGas() {
         hasValue={!!value}
         onClick={() => handleUpdate(rowIndex, "Flow Rate [l/min]", value)}
       >
-        {value || "Edit range"}
+        {value}
+      </SelectorButton>
+    ),
+    Designation: (value: string, rowIndex: number) => (
+      <SelectorButton
+        hasValue={!!value}
+        onClick={() => handleUpdate(rowIndex, "Designation", value)}
+      >
+        {value}
+      </SelectorButton>
+    ),
+    Brandname: (value: string, rowIndex: number) => (
+      <SelectorButton
+        hasValue={!!value}
+        onClick={() => handleUpdate(rowIndex, "Brandname", value)}
+      >
+        {value}
+      </SelectorButton>
+    ),
+    Manufacturer: (value: string, rowIndex: number) => (
+      <SelectorButton
+        hasValue={!!value}
+        onClick={() => handleUpdate(rowIndex, "Manufacturer", value)}
+      >
+        {value}
       </SelectorButton>
     ),
   };
+
+  const tableColumns = [
+    { key: "Manufacturer", label: "Manufacturer", centred: true },
+    { key: "Brandname", label: "Brandname" },
+    { key: "Standard", label: "Standard" },
+    { key: "Symbol", label: "Symbol", centred: true },
+    { key: "Composition", label: "Composition" },
+  ];
 
   return (
     <>
@@ -212,6 +327,22 @@ export function ShieldingGas() {
           }}
         />
       )}
+      <SelectionModal
+        isOpen={isGasModalOpen}
+        onClose={() => setIsGasModalOpen(false)}
+        onReset={handleGasReset}
+        title="Shielding Gases"
+        categories={createGasCategories()}
+        items={createGasItems()}
+        selectedId={
+          selectedRowIndex !== null
+            ? `${wpsData.Layers[selectedRowIndex].ShieldingGas.Manufacturer}-${wpsData.Layers[selectedRowIndex].ShieldingGas.Brandname}`
+            : undefined
+        }
+        onSelect={handleGasSelect}
+        tableColumns={tableColumns}
+        showChemicalComposition
+      />
     </>
   );
 }

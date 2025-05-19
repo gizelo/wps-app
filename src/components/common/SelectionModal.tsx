@@ -156,6 +156,9 @@ const Button = styled.button<{ primary?: boolean; disabled?: boolean }>`
 
 const TableContainer = styled.div`
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   overflow: auto;
   padding-left: 14px;
   border-left: 1px solid #b1b1b1;
@@ -194,6 +197,19 @@ const Tr = styled.tr<{ selected?: boolean }>`
   }
 `;
 
+const ChemicalCompositionPanel = styled.div`
+  width: 100%;
+  background-color: #f8f8f8;
+  padding: 12px;
+  border: 1px solid #b1b1b1;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  font-size: 1.2em;
+  text-wrap: auto;
+  text-align: left;
+  margin-top: 10px;
+`;
+
 export interface Category {
   id: string;
   label: string;
@@ -204,7 +220,7 @@ export interface Category {
 export interface Item {
   id: string;
   categoryId: string;
-  [key: string]: string | number | boolean | undefined;
+  [key: string]: string | number | boolean | string[] | undefined;
 }
 
 interface SelectionModalProps {
@@ -220,6 +236,7 @@ interface SelectionModalProps {
   tableColumns: { key: string; label: string; centred?: boolean }[];
   layerIndex?: number;
   isFillerSelection?: boolean;
+  showChemicalComposition?: boolean;
 }
 
 interface TableProps {
@@ -228,6 +245,7 @@ interface TableProps {
   tempSelected: Item | null;
   onSelect: (item: Item) => void;
   tableColumns: { key: string; label: string; centred?: boolean }[];
+  showChemicalComposition?: boolean;
 }
 
 const MemoizedTable = React.memo(function TableComponent({
@@ -236,6 +254,7 @@ const MemoizedTable = React.memo(function TableComponent({
   tempSelected,
   onSelect,
   tableColumns,
+  showChemicalComposition,
 }: TableProps) {
   const tableRef = useRef<HTMLDivElement>(null);
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -257,6 +276,13 @@ const MemoizedTable = React.memo(function TableComponent({
   const filteredItems = useMemo(() => {
     return items.filter((item) => item.categoryId === selectedCategory?.id);
   }, [items, selectedCategory?.id]);
+
+  const formatChemicalComposition = (composition: unknown) => {
+    if (Array.isArray(composition)) {
+      return composition.filter(Boolean).join(", ");
+    }
+    return "";
+  };
 
   return (
     <TableContainer ref={tableRef}>
@@ -286,6 +312,11 @@ const MemoizedTable = React.memo(function TableComponent({
           ))}
         </tbody>
       </Table>
+      {showChemicalComposition && tempSelected?.ChemicalComposition && (
+        <ChemicalCompositionPanel>
+          {formatChemicalComposition(tempSelected.ChemicalComposition)}
+        </ChemicalCompositionPanel>
+      )}
     </TableContainer>
   );
 });
@@ -303,6 +334,7 @@ export function SelectionModal({
   tableColumns,
   layerIndex,
   isFillerSelection = false,
+  showChemicalComposition = false,
 }: SelectionModalProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
@@ -522,6 +554,7 @@ export function SelectionModal({
             tempSelected={tempSelected}
             onSelect={handleTableItemSelect}
             tableColumns={tableColumns}
+            showChemicalComposition={showChemicalComposition}
           />
         </ContentContainer>
 

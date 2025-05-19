@@ -20,12 +20,14 @@ export interface FillerMetal {
 }
 
 export interface ShieldingGas {
-  Designation: string;
+  Standard: string;
+  Symbol: string;
+  NominalComposition: string;
   Brandname: string;
   Manufacturer: string;
   FlowRate: Limit;
-  PreflowTime: number;
-  PostflowTime: number;
+  PreflowTime: number | null;
+  PostflowTime: number | null;
 }
 
 export interface FurtherInformation {

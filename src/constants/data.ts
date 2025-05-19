@@ -79,9 +79,11 @@ export const DATA = {
         Size: "0.8",
       },
       ShieldingGas: {
-        Designation: "ISO 14175 I1: ArCO - 5/4",
-        Brandname: "Schweißargon spezial",
-        Manufacturer: "Messer Group",
+        Standard: "ISO 14175",
+        Symbol: "M23",
+        NominalComposition: "ArCO – 5/4",
+        Brandname: "CORGON® 5S4",
+        Manufacturer: "Linde",
         FlowRate: {
           firstValue: 15,
           secondValue: 18,

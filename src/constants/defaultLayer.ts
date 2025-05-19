@@ -43,7 +43,9 @@ export const DEFAULT_LAYER = {
     Size: "",
   },
   ShieldingGas: {
-    Designation: "",
+    Standard: "",
+    Symbol: "",
+    NominalComposition: "",
     Brandname: "",
     Manufacturer: "",
     FlowRate: {

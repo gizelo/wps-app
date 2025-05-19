@@ -11,9 +11,10 @@ import { collections } from "../../constants/collections";
 import { LayersModal } from "../LayersModal";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
+  white-space: nowrap;
+  height: 22px;
   cursor: pointer;
   padding: 4px;
-  height: 22px;
   background: #f2f2f2;
   color: ${({ hasValue }) => (hasValue ? "inherit" : "#888")};
   border: 1px solid transparent;
