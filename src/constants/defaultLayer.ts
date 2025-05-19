@@ -7,25 +7,31 @@ export const DEFAULT_LAYER = {
   PassType: "",
   Process: "",
   Current: {
-    LowLimit: 0,
-    HighLimit: 0,
+    firstValue: 0,
+    secondValue: 0,
+    mode: "Range",
+    Parameters: [],
   },
   Voltage: {
-    LowLimit: 0,
-    HighLimit: 0,
+    firstValue: 0,
+    secondValue: 0,
+    mode: "Range",
   },
   Polarity: "",
   WireFeedSpeed: {
-    LowLimit: 0,
-    HighLimit: 0,
+    firstValue: 0,
+    secondValue: 0,
+    mode: "Range",
   },
   TravelSpeed: {
-    LowLimit: 0,
-    HighLimit: 0,
+    firstValue: 0,
+    secondValue: 0,
+    mode: "Range",
   },
   HeatInput: {
-    LowLimit: 0,
-    HighLimit: 0,
+    firstValue: 0,
+    secondValue: 0,
+    mode: "Range",
   },
   FillerMetal: {
     Brandname: "",
@@ -41,27 +47,25 @@ export const DEFAULT_LAYER = {
     Brandname: "",
     Manufacturer: "",
     FlowRate: {
-      LowLimit: 0,
-      HighLimit: 0,
+      firstValue: 0,
+      secondValue: 0,
+      mode: "Range",
     },
     PreflowTime: 0,
     PostflowTime: 0,
   },
   FurtherInformation: {
-    Parameters: [
-      {
-        Name: "TipToWorkDistance",
-        Value: "0",
-      },
-      {
-        Name: "DropletTransfer",
-        Value: "0",
-      },
-      {
-        Name: "GasNozzleDiameter",
-        Value: "0",
-      },
-    ],
+    TipToWorkDistance: {
+      firstValue: 0,
+      secondValue: 0,
+      mode: "Range",
+    },
+    DropletTransfer: "",
+    GasNozzleDiameter: {
+      firstValue: 0,
+      secondValue: 0,
+      mode: "Range",
+    },
     WeavingType: "",
   },
 };

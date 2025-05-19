@@ -4,7 +4,7 @@ import { WELDING_PROCESSES } from "../../constants/weldingProcesses";
 import { WELDING_CATEGORIES } from "../../constants/weldingCategories";
 import { useState } from "react";
 import { SelectionModal, Category, Item } from "../common/SelectionModal";
-import { RangeEditModal } from "../common/RangeEditModal";
+import { RangeEditModal, DisplayMode } from "../common/RangeEditModal";
 import styled from "styled-components";
 import { StyledSelect } from "../common/StyledSelect";
 import { collections } from "../../constants/collections";
@@ -92,6 +92,25 @@ function ProcessSelector({
   );
 }
 
+const formatRangeValue = (limit: {
+  firstValue: number;
+  secondValue: number;
+  mode: string;
+}) => {
+  switch (limit.mode) {
+    case "SingleValue":
+      return limit.firstValue.toString();
+    case "Range":
+      return `${limit.firstValue}-${limit.secondValue}`;
+    case "AbsDeviation":
+      return `${limit.firstValue} ± ${limit.secondValue}`;
+    case "RelDeviation":
+      return `${limit.firstValue} ± ${limit.secondValue}%`;
+    default:
+      return limit.firstValue.toString();
+  }
+};
+
 export function WeldingDetails() {
   const { wpsData, updateLayer } = useWPS();
   const [isRangeModalOpen, setIsRangeModalOpen] = useState(false);
@@ -110,12 +129,12 @@ export function WeldingDetails() {
     Positions: layer.Positions,
     "Pass Type": layer.PassType,
     Process: layer.Process,
-    "Current [A]": `${layer.Current.LowLimit}-${layer.Current.HighLimit}`,
-    "Voltage [V]": `${layer.Voltage.LowLimit}-${layer.Voltage.HighLimit}`,
+    "Current [A]": formatRangeValue(layer.Current),
+    "Voltage [V]": formatRangeValue(layer.Voltage),
     Polarity: layer.Polarity,
-    "Wire Feed Speed [m/min]": `${layer.WireFeedSpeed.LowLimit}-${layer.WireFeedSpeed.HighLimit}`,
-    "Travel Speed [cm/min]": `${layer.TravelSpeed.LowLimit}-${layer.TravelSpeed.HighLimit}`,
-    "Heat Input [kJ/cm]": `${layer.HeatInput.LowLimit}-${layer.HeatInput.HighLimit}`,
+    "Wire Feed Speed [m/min]": formatRangeValue(layer.WireFeedSpeed),
+    "Travel Speed [cm/min]": formatRangeValue(layer.TravelSpeed),
+    "Heat Input [kJ/cm]": formatRangeValue(layer.HeatInput),
   }));
 
   const handleUpdate = (
@@ -130,7 +149,7 @@ export function WeldingDetails() {
       case "Passes":
         setEditLayerIndex(index);
         setIsPassesEditOpen(true);
-        break;
+        return;
       case "Positions":
         updatedLayer.Positions = Array.isArray(value)
           ? value.join(", ")
@@ -142,7 +161,7 @@ export function WeldingDetails() {
       case "Process":
         updatedLayer.Process = value as string;
         updateLayer(index, updatedLayer);
-        break;
+        return;
       case "Current [A]":
       case "Voltage [V]":
       case "Wire Feed Speed [m/min]":
@@ -151,7 +170,7 @@ export function WeldingDetails() {
         setSelectedRowIndex(index);
         setSelectedRangeField(field);
         setIsRangeModalOpen(true);
-        break;
+        return;
       case "Polarity":
         updatedLayer.Polarity = value as string;
         break;
@@ -162,48 +181,52 @@ export function WeldingDetails() {
     }
   };
 
-  const handleRangeSave = (
-    values: number[] | { From: number; To: number | null }
-  ) => {
-    if (selectedRowIndex !== null) {
+  const handleRangeSave = (values: {
+    firstValue: number;
+    secondValue: number;
+    mode: string;
+  }) => {
+    if (selectedRowIndex !== null && selectedRangeField) {
       const layer = wpsData.Layers[selectedRowIndex];
       const updatedLayer = { ...layer };
-      if (selectedRangeField) {
-        switch (selectedRangeField) {
-          case "Current [A]":
-            updatedLayer.Current = {
-              LowLimit: (values as number[])[0],
-              HighLimit: (values as number[])[1],
-            };
-            break;
-          case "Voltage [V]":
-            updatedLayer.Voltage = {
-              LowLimit: (values as number[])[0],
-              HighLimit: (values as number[])[1],
-            };
-            break;
-          case "Wire Feed Speed [m/min]":
-            updatedLayer.WireFeedSpeed = {
-              LowLimit: (values as number[])[0],
-              HighLimit: (values as number[])[1],
-            };
-            break;
-          case "Travel Speed [cm/min]":
-            updatedLayer.TravelSpeed = {
-              LowLimit: (values as number[])[0],
-              HighLimit: (values as number[])[1],
-            };
-            break;
-          case "Heat Input [kJ/cm]":
-            updatedLayer.HeatInput = {
-              LowLimit: (values as number[])[0],
-              HighLimit: (values as number[])[1],
-            };
-            break;
-        }
-      } else {
-        // Passes
-        updatedLayer.Passes = values as { From: number; To: number | null };
+
+      switch (selectedRangeField) {
+        case "Current [A]":
+          updatedLayer.Current = {
+            firstValue: values.firstValue,
+            secondValue: values.secondValue,
+            mode: values.mode,
+            Parameters: [],
+          };
+          break;
+        case "Voltage [V]":
+          updatedLayer.Voltage = {
+            firstValue: values.firstValue,
+            secondValue: values.secondValue,
+            mode: values.mode,
+          };
+          break;
+        case "Wire Feed Speed [m/min]":
+          updatedLayer.WireFeedSpeed = {
+            firstValue: values.firstValue,
+            secondValue: values.secondValue,
+            mode: values.mode,
+          };
+          break;
+        case "Travel Speed [cm/min]":
+          updatedLayer.TravelSpeed = {
+            firstValue: values.firstValue,
+            secondValue: values.secondValue,
+            mode: values.mode,
+          };
+          break;
+        case "Heat Input [kJ/cm]":
+          updatedLayer.HeatInput = {
+            firstValue: values.firstValue,
+            secondValue: values.secondValue,
+            mode: values.mode,
+          };
+          break;
       }
       updateLayer(selectedRowIndex, updatedLayer);
     }
@@ -312,7 +335,7 @@ export function WeldingDetails() {
         onUpdate={handleUpdate}
         customRenderers={customRenderers}
       />
-      {selectedRowIndex !== null && (
+      {selectedRowIndex !== null && selectedRangeField && (
         <RangeEditModal
           isOpen={isRangeModalOpen}
           onClose={() => {
@@ -320,31 +343,42 @@ export function WeldingDetails() {
             setSelectedRangeField(null);
           }}
           onSave={handleRangeSave}
-          initialValues={
-            selectedRangeField
-              ? [
-                  selectedRangeField === "Current [A]"
-                    ? wpsData.Layers[selectedRowIndex].Current.LowLimit
-                    : selectedRangeField === "Voltage [V]"
-                    ? wpsData.Layers[selectedRowIndex].Voltage.LowLimit
-                    : selectedRangeField === "Wire Feed Speed [m/min]"
-                    ? wpsData.Layers[selectedRowIndex].WireFeedSpeed.LowLimit
-                    : selectedRangeField === "Travel Speed [cm/min]"
-                    ? wpsData.Layers[selectedRowIndex].TravelSpeed.LowLimit
-                    : wpsData.Layers[selectedRowIndex].HeatInput.LowLimit,
-                  selectedRangeField === "Current [A]"
-                    ? wpsData.Layers[selectedRowIndex].Current.HighLimit
-                    : selectedRangeField === "Voltage [V]"
-                    ? wpsData.Layers[selectedRowIndex].Voltage.HighLimit
-                    : selectedRangeField === "Wire Feed Speed [m/min]"
-                    ? wpsData.Layers[selectedRowIndex].WireFeedSpeed.HighLimit
-                    : selectedRangeField === "Travel Speed [cm/min]"
-                    ? wpsData.Layers[selectedRowIndex].TravelSpeed.HighLimit
-                    : wpsData.Layers[selectedRowIndex].HeatInput.HighLimit,
-                ]
-              : undefined
-          }
-          title={selectedRangeField || "Edit Range"}
+          initialValues={{
+            First:
+              selectedRangeField === "Current [A]"
+                ? wpsData.Layers[selectedRowIndex].Current.firstValue
+                : selectedRangeField === "Voltage [V]"
+                ? wpsData.Layers[selectedRowIndex].Voltage.firstValue
+                : selectedRangeField === "Wire Feed Speed [m/min]"
+                ? wpsData.Layers[selectedRowIndex].WireFeedSpeed.firstValue
+                : selectedRangeField === "Travel Speed [cm/min]"
+                ? wpsData.Layers[selectedRowIndex].TravelSpeed.firstValue
+                : wpsData.Layers[selectedRowIndex].HeatInput.firstValue,
+            Second:
+              selectedRangeField === "Current [A]"
+                ? wpsData.Layers[selectedRowIndex].Current.secondValue
+                : selectedRangeField === "Voltage [V]"
+                ? wpsData.Layers[selectedRowIndex].Voltage.secondValue
+                : selectedRangeField === "Wire Feed Speed [m/min]"
+                ? wpsData.Layers[selectedRowIndex].WireFeedSpeed.secondValue
+                : selectedRangeField === "Travel Speed [cm/min]"
+                ? wpsData.Layers[selectedRowIndex].TravelSpeed.secondValue
+                : wpsData.Layers[selectedRowIndex].HeatInput.secondValue,
+            Mode:
+              selectedRangeField === "Current [A]"
+                ? (wpsData.Layers[selectedRowIndex].Current.mode as DisplayMode)
+                : selectedRangeField === "Voltage [V]"
+                ? (wpsData.Layers[selectedRowIndex].Voltage.mode as DisplayMode)
+                : selectedRangeField === "Wire Feed Speed [m/min]"
+                ? (wpsData.Layers[selectedRowIndex].WireFeedSpeed
+                    .mode as DisplayMode)
+                : selectedRangeField === "Travel Speed [cm/min]"
+                ? (wpsData.Layers[selectedRowIndex].TravelSpeed
+                    .mode as DisplayMode)
+                : (wpsData.Layers[selectedRowIndex].HeatInput
+                    .mode as DisplayMode),
+          }}
+          title={selectedRangeField}
         />
       )}
       {isPassesEditOpen && editLayerIndex !== null && (

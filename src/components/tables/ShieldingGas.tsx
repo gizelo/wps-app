@@ -1,7 +1,7 @@
 import { useWPS } from "../../context/WPSContext";
 import { StyledTable } from "../common/StyledTable";
 import { useState } from "react";
-import { RangeEditModal } from "../common/RangeEditModal";
+import { RangeEditModal, DisplayMode } from "../common/RangeEditModal";
 import styled from "styled-components";
 import { LayersModal } from "../LayersModal";
 
@@ -29,6 +29,25 @@ const headers = [
   "Postflow Time [s]",
 ];
 
+const formatRangeValue = (limit: {
+  firstValue: number;
+  secondValue: number;
+  mode: string;
+}) => {
+  switch (limit.mode) {
+    case "SingleValue":
+      return limit.firstValue.toString();
+    case "Range":
+      return `${limit.firstValue}-${limit.secondValue}`;
+    case "AbsDeviation":
+      return `${limit.firstValue} ± ${limit.secondValue}`;
+    case "RelDeviation":
+      return `${limit.firstValue} ± ${limit.secondValue}%`;
+    default:
+      return limit.firstValue.toString();
+  }
+};
+
 export function ShieldingGas() {
   const { wpsData, updateLayer } = useWPS();
   const [isRangeModalOpen, setIsRangeModalOpen] = useState(false);
@@ -45,7 +64,7 @@ export function ShieldingGas() {
     Designation: layer.ShieldingGas.Designation,
     Brandname: layer.ShieldingGas.Brandname,
     Manufacturer: layer.ShieldingGas.Manufacturer,
-    "Flow Rate [l/min]": `${layer.ShieldingGas.FlowRate.LowLimit}-${layer.ShieldingGas.FlowRate.HighLimit}`,
+    "Flow Rate [l/min]": formatRangeValue(layer.ShieldingGas.FlowRate),
     "Preflow Time [s]": layer.ShieldingGas.PreflowTime.toString(),
     "Postflow Time [s]": layer.ShieldingGas.PostflowTime.toString(),
   }));
@@ -95,15 +114,20 @@ export function ShieldingGas() {
     updateLayer(index, updatedLayer);
   };
 
-  const handleRangeSave = (values: number[]) => {
+  const handleRangeSave = (values: {
+    firstValue: number;
+    secondValue: number;
+    mode: string;
+  }) => {
     if (selectedRowIndex !== null && selectedField) {
       const layer = wpsData.Layers[selectedRowIndex];
       const updatedLayer = { ...layer };
 
       if (selectedField === "Flow Rate [l/min]") {
         updatedLayer.ShieldingGas.FlowRate = {
-          LowLimit: values[0],
-          HighLimit: values[1],
+          firstValue: values.firstValue,
+          secondValue: values.secondValue,
+          mode: values.mode,
         };
       }
 
@@ -152,12 +176,16 @@ export function ShieldingGas() {
           onSave={handleRangeSave}
           initialValues={
             selectedField === "Flow Rate [l/min]"
-              ? [
-                  wpsData.Layers[selectedRowIndex].ShieldingGas.FlowRate
-                    .LowLimit,
-                  wpsData.Layers[selectedRowIndex].ShieldingGas.FlowRate
-                    .HighLimit,
-                ]
+              ? {
+                  First:
+                    wpsData.Layers[selectedRowIndex].ShieldingGas.FlowRate
+                      .firstValue,
+                  Second:
+                    wpsData.Layers[selectedRowIndex].ShieldingGas.FlowRate
+                      .secondValue,
+                  Mode: wpsData.Layers[selectedRowIndex].ShieldingGas.FlowRate
+                    .mode as DisplayMode,
+                }
               : undefined
           }
           title={selectedField}

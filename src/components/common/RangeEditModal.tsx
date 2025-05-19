@@ -18,26 +18,50 @@ const ModalContent = styled.div`
   background: white;
   padding: 20px;
   border-radius: 8px;
-  min-width: 300px;
+  min-width: 600px;
 `;
 
 const InputGroup = styled.div`
   display: flex;
   gap: 10px;
   margin-bottom: 24px;
+  align-items: center;
 `;
 
 const InputWrapper = styled.div`
   flex: 1;
 `;
 
-const Label = styled.label`
-  display: block;
-  margin-bottom: 4px;
-  font-size: 14px;
+const CheckboxWrapper = styled.div<{ $disabled?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 9px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: ${(props) => (props.$disabled ? "#f5f5f5" : "white")};
+  cursor: ${(props) => (props.$disabled ? "not-allowed" : "pointer")};
+  opacity: ${(props) => (props.$disabled ? 0.6 : 1)};
+`;
+
+const Checkbox = styled.input<{ $disabled?: boolean }>`
+  margin: 0;
+  cursor: ${(props) => (props.$disabled ? "not-allowed" : "pointer")};
+`;
+
+const CheckboxLabel = styled.label<{ $disabled?: boolean }>`
+  cursor: ${(props) => (props.$disabled ? "not-allowed" : "pointer")};
+  user-select: none;
 `;
 
 const Input = styled.input`
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+`;
+
+const Select = styled.select`
   width: 100%;
   padding: 8px;
   border: 1px solid #ccc;
@@ -69,36 +93,77 @@ const ErrorMessage = styled.div`
   margin-bottom: 16px;
 `;
 
+export type DisplayMode =
+  | "None"
+  | "SingleValue"
+  | "Range"
+  | "AbsDeviation"
+  | "RelDeviation";
+
 interface RangeEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (values: number[]) => void;
-  initialValues?: number[];
+  onSave: (values: {
+    firstValue: number;
+    secondValue: number;
+    mode: DisplayMode;
+  }) => void;
+  initialValues?: { First: number; Second?: number; Mode?: DisplayMode };
   title: string;
-  allowNegative?: boolean;
 }
+
+const MIN_VALUE = 1;
+const MAX_VALUE = 999;
+
+const modeToOperator = {
+  None: "",
+  SingleValue: "",
+  Range: "-",
+  AbsDeviation: "±",
+  RelDeviation: "±",
+} as const;
+
+const modeToRelative = {
+  None: false,
+  SingleValue: false,
+  Range: false,
+  AbsDeviation: false,
+  RelDeviation: true,
+} as const;
 
 export function RangeEditModal({
   isOpen,
   onClose,
   onSave,
-  initialValues = [],
+  initialValues = { First: 0, Mode: "SingleValue" },
   title,
-  allowNegative = false,
 }: RangeEditModalProps) {
-  const [value1, setValue1] = useState<string>(
-    initialValues[0]?.toString() || ""
+  const [firstValue, setFirstValue] = useState<string>(
+    initialValues.First?.toString() || ""
   );
-  const [value2, setValue2] = useState<string>(
-    initialValues[1]?.toString() || ""
+  const [secondValue, setSecondValue] = useState<string>(
+    initialValues.Second?.toString() || ""
+  );
+  const [operator, setOperator] = useState<string>(
+    initialValues.Mode ? modeToOperator[initialValues.Mode] : ""
+  );
+  const [relativeDeviation, setRelativeDeviation] = useState<boolean>(
+    initialValues.Mode ? modeToRelative[initialValues.Mode] : false
   );
   const [error, setError] = useState<string>("");
+  const [displayMode, setDisplayMode] = useState<DisplayMode>(
+    initialValues.Mode || "SingleValue"
+  );
 
   useEffect(() => {
     if (isOpen) {
-      setValue1(initialValues[0]?.toString() || "");
-      setValue2(initialValues[1]?.toString() || "");
+      setFirstValue(initialValues.First?.toString() || "");
+      setSecondValue(initialValues.Second?.toString() || "");
+      const initialMode = initialValues.Mode || "SingleValue";
+      setOperator(modeToOperator[initialMode]);
+      setRelativeDeviation(modeToRelative[initialMode]);
       setError("");
+      setDisplayMode(initialMode);
     }
   }, [isOpen, initialValues]);
 
@@ -116,15 +181,111 @@ export function RangeEditModal({
     };
   }, [isOpen, onClose]);
 
-  const handleSave = () => {
-    const lowNum = parseFloat(value1) || 0;
-    const highNum = parseFloat(value2) || lowNum || 0;
-    if (!allowNegative && (lowNum < 0 || highNum < 0)) {
-      setError("Values cannot be negative");
-      return;
+  const updateDisplayMode = () => {
+    const first = parseFloat(firstValue) || 0;
+    const second = parseFloat(secondValue) || 0;
+
+    let mode: DisplayMode = "None";
+    if (first === 0) {
+      mode = "None";
+    } else if (!operator) {
+      mode = "SingleValue";
+    } else if (operator === "-") {
+      mode = second !== 0 ? "Range" : "SingleValue";
+    } else if (operator === "±") {
+      mode =
+        second !== 0
+          ? relativeDeviation
+            ? "RelDeviation"
+            : "AbsDeviation"
+          : "SingleValue";
     }
-    onSave([lowNum, highNum]);
-    onClose();
+
+    setDisplayMode(mode);
+  };
+
+  useEffect(() => {
+    updateDisplayMode();
+  }, [firstValue, secondValue, operator, relativeDeviation]);
+
+  const validateValues = () => {
+    const first = parseFloat(firstValue) || 0;
+    const second = parseFloat(secondValue) || 0;
+
+    if (first < MIN_VALUE || first > MAX_VALUE) {
+      throw new Error(
+        `First value must be between ${MIN_VALUE} and ${MAX_VALUE}`
+      );
+    }
+
+    if (operator && second !== 0) {
+      if (relativeDeviation) {
+        if (second < 0.5 || second > 100) {
+          throw new Error("Relative deviation must be between 0.5% and 100%");
+        }
+      } else {
+        if (second < MIN_VALUE || second > MAX_VALUE) {
+          throw new Error(
+            `Second value must be between ${MIN_VALUE} and ${MAX_VALUE}`
+          );
+        }
+      }
+    }
+
+    if (operator === "-" && first >= second) {
+      throw new Error("First limit must be less than Second");
+    }
+
+    if (operator === "±") {
+      if (relativeDeviation && second > 100) {
+        throw new Error("Relative deviation cannot exceed 100%");
+      }
+      if (!relativeDeviation && second >= first) {
+        throw new Error("Absolute deviation must be less than Setpoint");
+      }
+    }
+  };
+
+  const formatOutputString = () => {
+    const first = parseFloat(firstValue) || 0;
+    const second = parseFloat(secondValue) || 0;
+
+    if (!operator || second === 0) return first.toString();
+    if (operator === "-") return `${first} - ${second}`;
+    if (operator === "±")
+      return relativeDeviation
+        ? `${first} ± ${second}%`
+        : `${first} ± ${second}`;
+    return first.toString();
+  };
+
+  const handleSave = () => {
+    try {
+      validateValues();
+      const first = parseFloat(firstValue) || 0;
+      const second = parseFloat(secondValue) || 0;
+
+      const result = {
+        firstValue: first,
+        secondValue: second,
+        mode: displayMode,
+      };
+
+      console.log("Output string: " + formatOutputString());
+      onSave(result);
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    }
+  };
+
+  const handleOperatorChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newOperator = e.target.value;
+    setOperator(newOperator);
+    if (newOperator === "") {
+      setSecondValue("");
+      setRelativeDeviation(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -132,35 +293,61 @@ export function RangeEditModal({
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
-        <h2 style={{ marginBottom: "16px" }}>{title}</h2>
+        <h2 style={{ marginBottom: "24px" }}>{title}</h2>
         <InputGroup>
           <InputWrapper>
-            <Label>Low Limit</Label>
             <Input
               type="number"
-              value={value1}
-              onChange={(e) => setValue1(e.target.value)}
-              placeholder="Enter low limit"
-              min={allowNegative ? undefined : "0"}
+              value={firstValue}
+              onChange={(e) => setFirstValue(e.target.value)}
+              placeholder="Enter first value"
+              min={MIN_VALUE}
+              max={MAX_VALUE}
+              step="0.1"
             />
           </InputWrapper>
           <InputWrapper>
-            <Label>High Limit</Label>
+            <Select
+              value={operator}
+              onChange={handleOperatorChange}
+              disabled={!firstValue}
+            >
+              <option value="">Single Value</option>
+              <option value="-">-</option>
+              <option value="±">±</option>
+            </Select>
+          </InputWrapper>
+          <InputWrapper>
             <Input
               type="number"
-              value={value2}
-              onChange={(e) => setValue2(e.target.value)}
-              placeholder="Enter high limit"
-              min={allowNegative ? undefined : "0"}
+              value={secondValue}
+              onChange={(e) => setSecondValue(e.target.value)}
+              placeholder="Enter second value"
+              min={MIN_VALUE}
+              max={MAX_VALUE}
+              step="0.1"
+              disabled={!operator}
             />
           </InputWrapper>
+          <CheckboxWrapper $disabled={!operator || operator !== "±"}>
+            <Checkbox
+              type="checkbox"
+              checked={relativeDeviation}
+              onChange={(e) => setRelativeDeviation(e.target.checked)}
+              disabled={!operator || operator !== "±"}
+              $disabled={!operator || operator !== "±"}
+            />
+            <CheckboxLabel $disabled={!operator || operator !== "±"}>
+              %
+            </CheckboxLabel>
+          </CheckboxWrapper>
         </InputGroup>
         {error && <ErrorMessage>{error}</ErrorMessage>}
         <ButtonGroup>
-          <Button onClick={onClose}>Cancel</Button>
           <Button $primary onClick={handleSave}>
-            Save
+            Apply
           </Button>
+          <Button onClick={onClose}>Cancel</Button>
         </ButtonGroup>
       </ModalContent>
     </ModalOverlay>

@@ -4,9 +4,9 @@ export interface Parameter {
 }
 
 export interface Limit {
-  LowLimit: number;
-  HighLimit: number;
-  Parameters?: Parameter[];
+  firstValue: number;
+  secondValue: number;
+  mode: string;
 }
 
 export interface FillerMetal {
@@ -28,13 +28,10 @@ export interface ShieldingGas {
   PostflowTime: number;
 }
 
-export interface TipToWorkDistance {
-  LowLimit: number;
-  HighLimit: number;
-}
-
 export interface FurtherInformation {
-  Parameters: Parameter[];
+  TipToWorkDistance: Limit;
+  DropletTransfer: string;
+  GasNozzleDiameter: Limit;
   WeavingType: string;
 }
 
@@ -46,7 +43,12 @@ export interface Layer {
   Positions: string;
   PassType: string;
   Process: string;
-  Current: Limit;
+  Current: {
+    firstValue: number;
+    secondValue: number;
+    mode: string;
+    Parameters: Parameter[];
+  };
   Voltage: Limit;
   Polarity: string;
   WireFeedSpeed: Limit;

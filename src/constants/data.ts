@@ -34,8 +34,9 @@ export const DATA = {
       PassType: "Root pass",
       Process: "131",
       Current: {
-        LowLimit: 110,
-        HighLimit: 120,
+        firstValue: 110,
+        secondValue: 120,
+        mode: "Range",
         Parameters: [
           {
             Name: "ArcLengthCorrection",
@@ -48,21 +49,25 @@ export const DATA = {
         ],
       },
       Voltage: {
-        LowLimit: 17,
-        HighLimit: 19,
+        firstValue: 17,
+        secondValue: 19,
+        mode: "Range",
       },
       Polarity: "DC+",
       WireFeedSpeed: {
-        LowLimit: 6.5,
-        HighLimit: 7.5,
+        firstValue: 6.5,
+        secondValue: 7.5,
+        mode: "Range",
       },
       TravelSpeed: {
-        LowLimit: 50,
-        HighLimit: 60,
+        firstValue: 50,
+        secondValue: 60,
+        mode: "Range",
       },
       HeatInput: {
-        LowLimit: 1.5,
-        HighLimit: 2.19,
+        firstValue: 1.5,
+        secondValue: 2.19,
+        mode: "Range",
       },
       FillerMetal: {
         Brandname: "MA-1070 (Al99,7)",
@@ -78,27 +83,25 @@ export const DATA = {
         Brandname: "Schweißargon spezial",
         Manufacturer: "Messer Group",
         FlowRate: {
-          LowLimit: 15,
-          HighLimit: 18,
+          firstValue: 15,
+          secondValue: 18,
+          mode: "Range",
         },
         PreflowTime: 5,
         PostflowTime: 10,
       },
       FurtherInformation: {
-        Parameters: [
-          {
-            Name: "TipToWorkDistance",
-            Value: "8 - 10",
-          },
-          {
-            Name: "DropletTransfer",
-            Value: "Dip transfer",
-          },
-          {
-            Name: "GasNozzleDiameter",
-            Value: "15",
-          },
-        ],
+        TipToWorkDistance: {
+          firstValue: 8,
+          secondValue: 10,
+          mode: "Range",
+        },
+        DropletTransfer: "Dip transfer",
+        GasNozzleDiameter: {
+          firstValue: 15,
+          secondValue: 15,
+          mode: "Range",
+        },
         WeavingType: "StringerPass",
       },
     },
