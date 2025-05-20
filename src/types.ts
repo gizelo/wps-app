@@ -80,8 +80,8 @@ export interface WPSData {
   RootPassPreparation: string;
   FirstParentMaterial: string;
   SecondParentMaterial: string;
-  ParentMaterialThickness: number;
-  OutsideDiameter: number;
+  ParentMaterialThickness: number | null;
+  OutsideDiameter: number | null;
   PreheatTemperature: string;
   IntermediatePassTemperature: string;
   JointDesignImage: string;

@@ -95,7 +95,10 @@ export function GeneralInfo() {
     >);
   }, [uniqueWeldingProcesses]);
 
-  const handleFieldChange = (field: keyof typeof wpsData, value: string) => {
+  const handleFieldChange = (
+    field: keyof typeof wpsData,
+    value: string | number | null
+  ) => {
     updateWPSData({ [field]: value } as Partial<typeof wpsData>);
 
     // Update Location when Manufacturer changes
@@ -165,7 +168,7 @@ export function GeneralInfo() {
     { key: "Location", label: "Location:" },
     { key: "WPQR", label: "WPQR:" },
     { key: "WelderQualification", label: "Qualification of welder:" },
-    { key: "WeldingProcess", label: "Welding process (EN ISO 4063):" },
+    { key: "WeldingProcess", label: "Welding processes:" },
     { key: "SeamType", label: "Material/Seam type:" },
     { key: "Customer", label: "Customer:" },
     { key: "PartNumber", label: "Part number:" },
@@ -235,9 +238,9 @@ export function GeneralInfo() {
     }
 
     if (key === "Customer") {
-      const customerOptions = users.map((user) => ({
-        value: user.Name,
-        label: user.Name,
+      const customerOptions = organizations.map((org) => ({
+        value: org.Alias,
+        label: org.Alias,
       }));
 
       return (
@@ -305,6 +308,31 @@ export function GeneralInfo() {
             value={wpsData[key] as string}
             onChange={(value) => handleFieldChange(key, value as string)}
             options={rootPassOptions}
+          />
+        </React.Fragment>
+      );
+    }
+
+    if (key === "ParentMaterialThickness" || key === "OutsideDiameter") {
+      const value = wpsData[key];
+      const displayValue = value === null ? "" : value.toString();
+
+      return (
+        <React.Fragment key={key}>
+          <Label>{label}</Label>
+          <StyledInput
+            value={displayValue}
+            onChange={(value) => {
+              const trimmedValue = value.trim();
+              if (trimmedValue === "") {
+                handleFieldChange(key, null);
+              } else {
+                const parsedValue = parseFloat(trimmedValue);
+                if (!isNaN(parsedValue)) {
+                  handleFieldChange(key, parsedValue);
+                }
+              }
+            }}
           />
         </React.Fragment>
       );
