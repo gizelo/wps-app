@@ -178,12 +178,12 @@ export function GeneralInfo() {
     { key: "RootPassPreparation", label: "Root pass preparation:" },
     { key: "FirstParentMaterial", label: "Base metal 1:" },
     { key: "SecondParentMaterial", label: "Base metal 2:" },
-    { key: "ParentMaterialThickness", label: "Plate thickness:" },
-    { key: "OutsideDiameter", label: "Outside diameter:" },
-    { key: "PreheatTemperature", label: "Preheat temperature:" },
+    { key: "ParentMaterialThickness", label: "Plate thickness (mm):" },
+    { key: "OutsideDiameter", label: "Outside diameter (mm):" },
+    { key: "PreheatTemperature", label: "Preheat temperature (°):" },
     {
       key: "IntermediatePassTemperature",
-      label: "Intermediate pass temperature:",
+      label: "Intermediate pass temperature (°):",
     },
   ] as const;
 

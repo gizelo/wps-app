@@ -532,7 +532,15 @@ export function SelectionModal({
               }}
             />
             {isFillerSelection && (
-              <Button onClick={handleDatasheetOpen} disabled={!tempSelected}>
+              <Button
+                onClick={handleDatasheetOpen}
+                disabled={!tempSelected}
+                style={{
+                  color: tempSelected ? "white" : "#6c757d",
+                  background: tempSelected ? "#ff9600" : "#e9ecef",
+                  borderColor: tempSelected ? "#ff9600" : "#ccc",
+                }}
+              >
                 Datasheet
               </Button>
             )}

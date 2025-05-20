@@ -82,7 +82,7 @@ function ProcessSelector({
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         onReset={handleReset}
-        title="Processes"
+        title="Welding Processes"
         categories={processCategories}
         items={processItems}
         selectedId={value}

@@ -4,9 +4,11 @@ import styled from "styled-components";
 const SelectContainer = styled.div`
   position: relative;
   width: 100%;
+  min-width: 80px;
 `;
 
 const SelectButton = styled.div<{ hasValue: boolean }>`
+  white-space: nowrap;
   width: 100%;
   height: 22px;
   padding: 4px 8px;

@@ -56,7 +56,7 @@ export function FurtherInfo() {
         field: "DropletTransfer",
       },
       {
-        label: "Diameter of gasnozzle [mm]",
+        label: "Diameter of gas nozzle [mm]",
         value: layer.FurtherInformation.GasNozzleDiameter,
         field: "GasNozzleDiameter",
       },
@@ -271,7 +271,7 @@ export function FurtherInfo() {
                         }
                       )}
                     </SelectorButton>
-                  ) : row.Parameter === "Diameter of gasnozzle [mm]" ? (
+                  ) : row.Parameter === "Diameter of gas nozzle [mm]" ? (
                     <SelectorButton
                       hasValue={!!row.Value}
                       onClick={() =>

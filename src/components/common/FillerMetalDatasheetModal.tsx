@@ -332,7 +332,6 @@ export function FillerMetalDatasheetModal({
     }
   }, [selectedClassification, selectedSize, showMaterialNumber, fillerData]);
 
-  // Handle ESC key
   useEffect(() => {
     if (!isOpen) return;
 
@@ -471,7 +470,7 @@ export function FillerMetalDatasheetModal({
               </thead>
               <tbody>
                 <tr>
-                  <Td>{process}</Td>
+                  <Td style={{ fontWeight: "bold" }}>{process}</Td>
                   <Td>
                     {gases.length > 0 ? (
                       <Select
@@ -485,8 +484,11 @@ export function FillerMetalDatasheetModal({
                         ))}
                       </Select>
                     ) : (
-                      <p style={{ color: "#666", fontStyle: "italic" }}>
-                        No shielding gases available for selected process
+                      <p>
+                        No shielding gases available for selected{" "}
+                        <span style={{ fontWeight: "bold" }}>{process}</span>{" "}
+                        process. Gas will be taken from the first available
+                        process for this filler metal.
                       </p>
                     )}
                   </Td>
@@ -506,7 +508,7 @@ export function FillerMetalDatasheetModal({
               </thead>
               <tbody>
                 <tr>
-                  <Td>{process}</Td>
+                  <Td style={{ fontWeight: "bold" }}>{process}</Td>
                   <Td>
                     {sizes.length > 0 ? (
                       <Select
@@ -522,8 +524,11 @@ export function FillerMetalDatasheetModal({
                         ))}
                       </Select>
                     ) : (
-                      <p style={{ color: "#666", fontStyle: "italic" }}>
-                        No sizes available for selected process
+                      <p>
+                        No sizes available for selected{" "}
+                        <span style={{ fontWeight: "bold" }}>{process}</span>{" "}
+                        process. Size will be taken from the first available
+                        process for this filler metal.
                       </p>
                     )}
                   </Td>

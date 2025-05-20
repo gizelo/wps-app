@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { useWPS } from "../context/WPSContext";
-import { StyledInput } from "./common/StyledInput";
+import { StyledSelect } from "./common/StyledSelect";
+import { users } from "../constants/users";
 
 const Table = styled.table`
   width: 100%;
@@ -49,6 +50,11 @@ export function SignaturesTable() {
     return str;
   };
 
+  const userOptions = users.map((user) => ({
+    value: user.Name,
+    label: user.Name,
+  }));
+
   return (
     <Table border={1}>
       <tbody>
@@ -92,31 +98,43 @@ export function SignaturesTable() {
           <Td>
             <CellContainer>
               <CellLabel>Signature:</CellLabel>
-              <StyledInput
-                type="text"
-                value={wpsData.CreatedBy}
-                onChange={(value) => updateWPSData({ CreatedBy: value })}
-              />
+              <div>
+                <StyledSelect
+                  value={wpsData.CreatedBy || ""}
+                  onChange={(value) =>
+                    updateWPSData({ CreatedBy: value as string })
+                  }
+                  options={userOptions}
+                />
+              </div>
             </CellContainer>
           </Td>
           <Td>
             <CellContainer>
               <CellLabel>Signature:</CellLabel>
-              <StyledInput
-                type="text"
-                value={wpsData.ApprovedBy}
-                onChange={(value) => updateWPSData({ ApprovedBy: value })}
-              />
+              <div>
+                <StyledSelect
+                  value={wpsData.ApprovedBy || ""}
+                  onChange={(value) =>
+                    updateWPSData({ ApprovedBy: value as string })
+                  }
+                  options={userOptions}
+                />
+              </div>
             </CellContainer>
           </Td>
           <Td>
             <CellContainer>
               <CellLabel>Signature:</CellLabel>
-              <StyledInput
-                type="text"
-                value={wpsData.ReleasedBy}
-                onChange={(value) => updateWPSData({ ReleasedBy: value })}
-              />
+              <div>
+                <StyledSelect
+                  value={wpsData.ReleasedBy || ""}
+                  onChange={(value) =>
+                    updateWPSData({ ReleasedBy: value as string })
+                  }
+                  options={userOptions}
+                />
+              </div>
             </CellContainer>
           </Td>
         </tr>
