@@ -26,6 +26,7 @@ const StyledCell = styled.td<{
 
 const TitleCell = styled(StyledCell)`
   font-size: 1.4em;
+  font-weight: bold;
 `;
 
 export function Header() {
@@ -37,10 +38,6 @@ export function Header() {
 
   const handleRevisionChange = (value: string) => {
     updateWPSData({ Revision: value });
-  };
-
-  const handleCaptionChange = (value: string) => {
-    updateWPSData({ Caption: value });
   };
 
   const handleDesignationChange = (value: string) => {
@@ -67,19 +64,7 @@ export function Header() {
             </div>
           </StyledCell>
           <TitleCell center width="50%">
-            <input
-              type="text"
-              value={wpsData.Caption}
-              onChange={(e) => handleCaptionChange(e.target.value)}
-              style={{
-                width: "100%",
-                height: "100%",
-                border: "none",
-                outline: "none",
-                textAlign: "center",
-                fontWeight: "bold",
-              }}
-            />
+            {wpsData.Caption}
           </TitleCell>
           <StyledCell center width="5%">
             <div style={{ marginBottom: "4px" }}>

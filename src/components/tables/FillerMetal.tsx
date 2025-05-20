@@ -5,7 +5,6 @@ import { SelectionModal, Category, Item } from "../common/SelectionModal";
 import styled from "styled-components";
 import { fillerGroups } from "../../constants/fillerGroups";
 import { fillers } from "../../constants/fillers";
-import { LayersModal } from "../LayersModal";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
   white-space: nowrap;
@@ -35,8 +34,6 @@ export function FillerMetal() {
   const { wpsData, updateLayer } = useWPS();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
-  const [isPassesEditOpen, setIsPassesEditOpen] = useState(false);
-  const [editLayerIndex, setEditLayerIndex] = useState<number | null>(null);
 
   const tableData = wpsData.Layers.map((layer) => ({
     Passes:
@@ -52,13 +49,7 @@ export function FillerMetal() {
     "Size [mm]": layer.FillerMetal.Size,
   }));
 
-  const handleUpdate = (index: number, field: string) => {
-    if (field === "Passes") {
-      setEditLayerIndex(index);
-      setIsPassesEditOpen(true);
-      return;
-    }
-
+  const handleUpdate = (index: number) => {
     setSelectedRowIndex(index);
     setIsModalOpen(true);
   };
@@ -126,43 +117,23 @@ export function FillerMetal() {
   }));
 
   const customRenderers = {
-    Passes: (value: string | number, rowIndex: number) => (
-      <SelectorButton
-        hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Passes")}
-      >
-        {String(value)}
-      </SelectorButton>
-    ),
     Designation: (value: string | number, rowIndex: number) => (
-      <SelectorButton
-        hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Designation")}
-      >
+      <SelectorButton hasValue={!!value} onClick={() => handleUpdate(rowIndex)}>
         {String(value)}
       </SelectorButton>
     ),
     Brandname: (value: string | number, rowIndex: number) => (
-      <SelectorButton
-        hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Brandname")}
-      >
+      <SelectorButton hasValue={!!value} onClick={() => handleUpdate(rowIndex)}>
         {String(value)}
       </SelectorButton>
     ),
     Manufacturer: (value: string | number, rowIndex: number) => (
-      <SelectorButton
-        hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Manufacturer")}
-      >
+      <SelectorButton hasValue={!!value} onClick={() => handleUpdate(rowIndex)}>
         {String(value)}
       </SelectorButton>
     ),
     "Size [mm]": (value: string | number, rowIndex: number) => (
-      <SelectorButton
-        hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Size [mm]")}
-      >
+      <SelectorButton hasValue={!!value} onClick={() => handleUpdate(rowIndex)}>
         {String(value)}
       </SelectorButton>
     ),
@@ -184,6 +155,7 @@ export function FillerMetal() {
         data={tableData}
         onUpdate={handleUpdate}
         customRenderers={customRenderers}
+        readOnlyColumns={["Passes"]}
       />
       <SelectionModal
         isOpen={isModalOpen}
@@ -202,27 +174,6 @@ export function FillerMetal() {
         layerIndex={selectedRowIndex || 0}
         isFillerSelection
       />
-      {isPassesEditOpen && editLayerIndex !== null && (
-        <LayersModal
-          isOpen={isPassesEditOpen}
-          onClose={() => {
-            setIsPassesEditOpen(false);
-            setEditLayerIndex(null);
-          }}
-          singleEdit
-          layers={wpsData.Layers}
-          editIndex={editLayerIndex}
-          onSave={(newPasses) => {
-            const updatedLayer = {
-              ...wpsData.Layers[editLayerIndex],
-              Passes: newPasses,
-            };
-            updateLayer(editLayerIndex, updatedLayer);
-            setIsPassesEditOpen(false);
-            setEditLayerIndex(null);
-          }}
-        />
-      )}
     </>
   );
 }

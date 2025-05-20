@@ -5,7 +5,6 @@ import styled from "styled-components";
 import { collections } from "../../constants/collections";
 import { StyledSelect } from "../common/StyledSelect";
 import { StyledInput } from "../common/StyledInput";
-import { LayersModal } from "../LayersModal";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
   white-space: nowrap;
@@ -34,13 +33,14 @@ interface TableRow {
   _paramField: string;
 }
 
+type RangeField = "TipToWorkDistance" | "GasNozzleDiameter";
+type SelectField = "DropletTransfer" | "WeavingType";
+
 export function FurtherInfo() {
   const { wpsData, updateLayer } = useWPS();
   const [isRangeModalOpen, setIsRangeModalOpen] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
-  const [selectedField, setSelectedField] = useState<string | null>(null);
-  const [isPassesEditOpen, setIsPassesEditOpen] = useState(false);
-  const [editLayerIndex, setEditLayerIndex] = useState<number | null>(null);
+  const [selectedField, setSelectedField] = useState<RangeField | null>(null);
 
   const tableData: TableRow[] = [];
   wpsData.Layers.forEach((layer, layerIdx) => {
@@ -48,17 +48,17 @@ export function FurtherInfo() {
       {
         label: "Tip to work distance [mm]",
         value: layer.FurtherInformation.TipToWorkDistance,
-        field: "TipToWorkDistance",
+        field: "TipToWorkDistance" as RangeField,
       },
       {
         label: "Droplet transfer",
         value: layer.FurtherInformation.DropletTransfer,
-        field: "DropletTransfer",
+        field: "DropletTransfer" as SelectField,
       },
       {
         label: "Diameter of gas nozzle [mm]",
         value: layer.FurtherInformation.GasNozzleDiameter,
-        field: "GasNozzleDiameter",
+        field: "GasNozzleDiameter" as RangeField,
       },
     ];
     params.forEach((param, i) => {
@@ -88,46 +88,31 @@ export function FurtherInfo() {
     });
   });
 
-  const handleUpdate = (
+  const handleRangeFieldUpdate = (rowIndex: number, field: RangeField) => {
+    const row = tableData[rowIndex];
+    setSelectedRowIndex(row._layerIndex);
+    setSelectedField(field);
+    setIsRangeModalOpen(true);
+  };
+
+  const handleSelectFieldUpdate = (
     rowIndex: number,
-    field: string,
-    value: string | { firstValue: number; secondValue: number; mode: string }
+    field: SelectField,
+    value: string
   ) => {
     const row = tableData[rowIndex];
-    const layerIdx = row._layerIndex;
-    const paramField = row._paramField;
-    const layer = wpsData.Layers[layerIdx];
+    const layer = wpsData.Layers[row._layerIndex];
     const updatedLayer = { ...layer };
     const updatedFurtherInfo = { ...layer.FurtherInformation };
 
-    if (field === "Passes") {
-      setEditLayerIndex(layerIdx);
-      setIsPassesEditOpen(true);
-      return;
+    if (field === "DropletTransfer") {
+      updatedFurtherInfo.DropletTransfer = value;
+    } else if (field === "WeavingType") {
+      updatedFurtherInfo.WeavingType = value;
     }
 
-    if (
-      paramField === "TipToWorkDistance" ||
-      paramField === "GasNozzleDiameter"
-    ) {
-      setSelectedRowIndex(layerIdx);
-      setSelectedField(paramField);
-      setIsRangeModalOpen(true);
-      return;
-    }
-
-    if (field === "Weaving Type") {
-      updatedFurtherInfo.WeavingType = value as string;
-      updatedLayer.FurtherInformation = updatedFurtherInfo;
-      updateLayer(layerIdx, updatedLayer);
-      return;
-    }
-
-    if (paramField === "DropletTransfer") {
-      updatedFurtherInfo.DropletTransfer = value as string;
-      updatedLayer.FurtherInformation = updatedFurtherInfo;
-      updateLayer(layerIdx, updatedLayer);
-    }
+    updatedLayer.FurtherInformation = updatedFurtherInfo;
+    updateLayer(row._layerIndex, updatedLayer);
   };
 
   const handleRangeSave = (values: {
@@ -140,19 +125,11 @@ export function FurtherInfo() {
       const updatedLayer = { ...layer };
       const updatedFurtherInfo = { ...layer.FurtherInformation };
 
-      if (selectedField === "TipToWorkDistance") {
-        updatedFurtherInfo.TipToWorkDistance = {
-          firstValue: values.firstValue,
-          secondValue: values.secondValue,
-          mode: values.mode,
-        };
-      } else if (selectedField === "GasNozzleDiameter") {
-        updatedFurtherInfo.GasNozzleDiameter = {
-          firstValue: values.firstValue,
-          secondValue: values.secondValue,
-          mode: values.mode,
-        };
-      }
+      updatedFurtherInfo[selectedField] = {
+        firstValue: values.firstValue,
+        secondValue: values.secondValue,
+        mode: values.mode,
+      };
 
       updatedLayer.FurtherInformation = updatedFurtherInfo;
       updateLayer(selectedRowIndex, updatedLayer);
@@ -214,17 +191,9 @@ export function FurtherInfo() {
                       border: "1px solid #000",
                       textAlign: "center",
                       padding: "6px",
-                      background: "#f2f2f2",
                     }}
                   >
-                    <SelectorButton
-                      hasValue={!!row.Passes.value}
-                      onClick={() =>
-                        handleUpdate(rowIndex, "Passes", row.Passes.value)
-                      }
-                    >
-                      {row.Passes.value || "Edit pass"}
-                    </SelectorButton>
+                    {row.Passes.value}
                   </td>
                 )}
                 <td
@@ -248,7 +217,11 @@ export function FurtherInfo() {
                       value={row.Value as string}
                       onChange={(newValue) => {
                         if (typeof newValue === "string") {
-                          handleUpdate(rowIndex, "Value", newValue);
+                          handleSelectFieldUpdate(
+                            rowIndex,
+                            "DropletTransfer",
+                            newValue
+                          );
                         }
                       }}
                       options={collections.DropletTransferType.map((type) => ({
@@ -260,7 +233,7 @@ export function FurtherInfo() {
                     <SelectorButton
                       hasValue={!!row.Value}
                       onClick={() =>
-                        handleUpdate(rowIndex, "TipToWorkDistance", row.Value)
+                        handleRangeFieldUpdate(rowIndex, "TipToWorkDistance")
                       }
                     >
                       {formatRangeValue(
@@ -275,7 +248,7 @@ export function FurtherInfo() {
                     <SelectorButton
                       hasValue={!!row.Value}
                       onClick={() =>
-                        handleUpdate(rowIndex, "GasNozzleDiameter", row.Value)
+                        handleRangeFieldUpdate(rowIndex, "GasNozzleDiameter")
                       }
                     >
                       {formatRangeValue(
@@ -290,7 +263,11 @@ export function FurtherInfo() {
                     <StyledInput
                       value={row.Value as string}
                       onChange={(value) =>
-                        handleUpdate(rowIndex, "Value", value)
+                        handleSelectFieldUpdate(
+                          rowIndex,
+                          "DropletTransfer",
+                          value
+                        )
                       }
                       centered
                     />
@@ -306,20 +283,21 @@ export function FurtherInfo() {
                       background: "#f2f2f2",
                     }}
                   >
-                    <StyledInput
+                    <StyledSelect
                       value={row["Weaving Type"].value || ""}
                       onChange={(value) => {
-                        const layerIdx = row._layerIndex;
-                        const layer = wpsData.Layers[layerIdx];
-                        const updatedLayer = { ...layer };
-                        const updatedFurtherInfo = {
-                          ...layer.FurtherInformation,
-                          WeavingType: value,
-                        };
-                        updatedLayer.FurtherInformation = updatedFurtherInfo;
-                        updateLayer(layerIdx, updatedLayer);
+                        if (typeof value === "string") {
+                          handleSelectFieldUpdate(
+                            rowIndex,
+                            "WeavingType",
+                            value
+                          );
+                        }
                       }}
-                      centered
+                      options={collections.WeavingType.map((type) => ({
+                        value: type,
+                        label: type,
+                      }))}
                     />
                   </td>
                 )}
@@ -328,7 +306,7 @@ export function FurtherInfo() {
           </tbody>
         </table>
       </div>
-      {isRangeModalOpen && selectedRowIndex !== null && selectedField && (
+      {selectedRowIndex !== null && selectedField && (
         <RangeEditModal
           isOpen={isRangeModalOpen}
           onClose={() => {
@@ -337,57 +315,22 @@ export function FurtherInfo() {
             setSelectedRowIndex(null);
           }}
           onSave={handleRangeSave}
-          initialValues={
-            selectedField === "TipToWorkDistance"
-              ? {
-                  First:
-                    wpsData.Layers[selectedRowIndex].FurtherInformation
-                      .TipToWorkDistance.firstValue,
-                  Second:
-                    wpsData.Layers[selectedRowIndex].FurtherInformation
-                      .TipToWorkDistance.secondValue,
-                  Mode: wpsData.Layers[selectedRowIndex].FurtherInformation
-                    .TipToWorkDistance.mode as DisplayMode,
-                }
-              : selectedField === "GasNozzleDiameter"
-              ? {
-                  First:
-                    wpsData.Layers[selectedRowIndex].FurtherInformation
-                      .GasNozzleDiameter.firstValue,
-                  Second:
-                    wpsData.Layers[selectedRowIndex].FurtherInformation
-                      .GasNozzleDiameter.secondValue,
-                  Mode: wpsData.Layers[selectedRowIndex].FurtherInformation
-                    .GasNozzleDiameter.mode as DisplayMode,
-                }
-              : undefined
-          }
+          initialValues={{
+            First:
+              wpsData.Layers[selectedRowIndex].FurtherInformation[selectedField]
+                .firstValue,
+            Second:
+              wpsData.Layers[selectedRowIndex].FurtherInformation[selectedField]
+                .secondValue,
+            Mode: wpsData.Layers[selectedRowIndex].FurtherInformation[
+              selectedField
+            ].mode as DisplayMode,
+          }}
           title={
             selectedField === "TipToWorkDistance"
               ? "Tip to Work Distance [mm]"
               : "Gas Nozzle Diameter [mm]"
           }
-        />
-      )}
-      {isPassesEditOpen && editLayerIndex !== null && (
-        <LayersModal
-          isOpen={isPassesEditOpen}
-          onClose={() => {
-            setIsPassesEditOpen(false);
-            setEditLayerIndex(null);
-          }}
-          singleEdit
-          layers={wpsData.Layers}
-          editIndex={editLayerIndex}
-          onSave={(newPasses) => {
-            const updatedLayer = {
-              ...wpsData.Layers[editLayerIndex],
-              Passes: newPasses,
-            };
-            updateLayer(editLayerIndex, updatedLayer);
-            setIsPassesEditOpen(false);
-            setEditLayerIndex(null);
-          }}
         />
       )}
     </>

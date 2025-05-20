@@ -3,7 +3,6 @@ import { StyledTable } from "../common/StyledTable";
 import { useState } from "react";
 import { RangeEditModal, DisplayMode } from "../common/RangeEditModal";
 import styled from "styled-components";
-import { LayersModal } from "../LayersModal";
 import { SelectionModal, Category, Item } from "../common/SelectionModal";
 import { shieldingGasGroups } from "../../constants/shieldingGasGroups";
 import { shieldingGases } from "../../constants/shieldingGases";
@@ -85,11 +84,9 @@ export function ShieldingGas() {
   const [isRangeModalOpen, setIsRangeModalOpen] = useState(false);
   const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
   const [selectedField, setSelectedField] = useState<string | null>(null);
-  const [isPassesEditOpen, setIsPassesEditOpen] = useState(false);
-  const [editLayerIndex, setEditLayerIndex] = useState<number | null>(null);
   const [isGasModalOpen, setIsGasModalOpen] = useState(false);
 
-  const tableData = wpsData.Layers.map((layer) => ({
+  const tableData = wpsData.Layers.map((layer, index) => ({
     Passes:
       layer.Passes.To !== null && layer.Passes.To !== undefined
         ? `${layer.Passes.From}-${layer.Passes.To}`
@@ -107,33 +104,34 @@ export function ShieldingGas() {
     "Flow Rate [l/min]": formatRangeValue(layer.ShieldingGas.FlowRate),
     "Preflow Time [s]": layer.ShieldingGas.PreflowTime?.toString() ?? "",
     "Postflow Time [s]": layer.ShieldingGas.PostflowTime?.toString() ?? "",
+    _layerIndex: index.toString(),
+    _paramField: "",
   }));
 
   const handleUpdate = (
     index: number,
     field: string,
-    value: string | number
+    value: string | { firstValue: number; secondValue: number; mode: string }
   ) => {
-    if (field === "Passes") {
-      setEditLayerIndex(index);
-      setIsPassesEditOpen(true);
-      return;
-    }
+    const row = tableData[index];
+    const layerIdx = parseInt(row._layerIndex);
+    const layer = wpsData.Layers[layerIdx];
+    const updatedLayer = { ...layer };
+    const updatedShieldingGas = { ...layer.ShieldingGas };
+
     if (field === "Flow Rate [l/min]") {
-      setSelectedRowIndex(index);
+      setSelectedRowIndex(layerIdx);
       setSelectedField(field);
       setIsRangeModalOpen(true);
       return;
     }
+
     if (["Designation", "Brandname", "Manufacturer"].includes(field)) {
-      setSelectedRowIndex(index);
+      setSelectedRowIndex(layerIdx);
       setIsGasModalOpen(true);
       return;
     }
 
-    const layer = wpsData.Layers[index];
-    const updatedLayer = { ...layer };
-    const updatedShieldingGas = { ...layer.ShieldingGas };
     const numValue =
       typeof value === "string" ? value.trim() : value.toString();
 
@@ -160,7 +158,7 @@ export function ShieldingGas() {
     }
 
     updatedLayer.ShieldingGas = updatedShieldingGas;
-    updateLayer(index, updatedLayer);
+    updateLayer(layerIdx, updatedLayer);
   };
 
   const handleGasSelect = (gas: Item) => {
@@ -222,14 +220,6 @@ export function ShieldingGas() {
   };
 
   const customRenderers = {
-    Passes: (value: string, rowIndex: number) => (
-      <SelectorButton
-        hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Passes", value)}
-      >
-        {value}
-      </SelectorButton>
-    ),
     "Flow Rate [l/min]": (value: string, rowIndex: number) => (
       <SelectorButton
         hasValue={!!value}
@@ -279,6 +269,7 @@ export function ShieldingGas() {
         data={tableData}
         onUpdate={handleUpdate}
         customRenderers={customRenderers}
+        readOnlyColumns={["Passes"]}
       />
       {selectedRowIndex !== null && selectedField && (
         <RangeEditModal
@@ -304,27 +295,6 @@ export function ShieldingGas() {
               : undefined
           }
           title={selectedField}
-        />
-      )}
-      {isPassesEditOpen && editLayerIndex !== null && (
-        <LayersModal
-          isOpen={isPassesEditOpen}
-          onClose={() => {
-            setIsPassesEditOpen(false);
-            setEditLayerIndex(null);
-          }}
-          singleEdit
-          layers={wpsData.Layers}
-          editIndex={editLayerIndex}
-          onSave={(newPasses) => {
-            const updatedLayer = {
-              ...wpsData.Layers[editLayerIndex],
-              Passes: newPasses,
-            };
-            updateLayer(editLayerIndex, updatedLayer);
-            setIsPassesEditOpen(false);
-            setEditLayerIndex(null);
-          }}
         />
       )}
       <SelectionModal

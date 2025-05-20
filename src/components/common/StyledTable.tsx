@@ -9,6 +9,7 @@ interface TableProps {
   customRenderers?: {
     [column: string]: (value: string, rowIndex: number) => React.ReactNode;
   };
+  readOnlyColumns?: string[];
 }
 
 const TableContainer = styled.div`
@@ -39,6 +40,7 @@ export function StyledTable({
   data,
   onUpdate,
   customRenderers,
+  readOnlyColumns = [],
 }: TableProps) {
   return (
     <TableContainer>
@@ -57,6 +59,8 @@ export function StyledTable({
                 <Td key={colIndex}>
                   {customRenderers && customRenderers[header] ? (
                     customRenderers[header](row[header], rowIndex)
+                  ) : readOnlyColumns.includes(header) ? (
+                    row[header] || ""
                   ) : (
                     <StyledInput
                       value={row[header] || ""}

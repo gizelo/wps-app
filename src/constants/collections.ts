@@ -52,4 +52,5 @@ export const collections = {
     "J-L060",
     "PK",
   ],
+  WeavingType: ["Stringer Pass", "Weaving Pass"],
 };

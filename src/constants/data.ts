@@ -104,7 +104,7 @@ export const DATA = {
           secondValue: 15,
           mode: "Range",
         },
-        WeavingType: "StringerPass",
+        WeavingType: "Stringer Pass",
       },
     },
   ],

@@ -8,7 +8,6 @@ import { RangeEditModal, DisplayMode } from "../common/RangeEditModal";
 import styled from "styled-components";
 import { StyledSelect } from "../common/StyledSelect";
 import { collections } from "../../constants/collections";
-import { LayersModal } from "../LayersModal";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
   white-space: nowrap;
@@ -119,8 +118,6 @@ export function WeldingDetails() {
   const [selectedRangeField, setSelectedRangeField] = useState<string | null>(
     null
   );
-  const [isPassesEditOpen, setIsPassesEditOpen] = useState(false);
-  const [editLayerIndex, setEditLayerIndex] = useState<number | null>(null);
 
   const tableData = wpsData.Layers.map((layer) => ({
     Passes:
@@ -147,10 +144,6 @@ export function WeldingDetails() {
     const updatedLayer = { ...layer };
 
     switch (field) {
-      case "Passes":
-        setEditLayerIndex(index);
-        setIsPassesEditOpen(true);
-        return;
       case "Positions":
         updatedLayer.Positions = Array.isArray(value)
           ? value.join(", ")
@@ -177,7 +170,7 @@ export function WeldingDetails() {
         break;
     }
 
-    if (field !== "Passes" && !field.includes("[") && field !== "Process") {
+    if (!field.includes("[") && field !== "Process") {
       updateLayer(index, updatedLayer);
     }
   };
@@ -278,14 +271,6 @@ export function WeldingDetails() {
         }))}
       />
     ),
-    Passes: (value: string, rowIndex: number) => (
-      <SelectorButton
-        hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Passes", value)}
-      >
-        {value}
-      </SelectorButton>
-    ),
     "Current [A]": (value: string, rowIndex: number) => (
       <SelectorButton
         hasValue={!!value}
@@ -335,6 +320,7 @@ export function WeldingDetails() {
         data={tableData}
         onUpdate={handleUpdate}
         customRenderers={customRenderers}
+        readOnlyColumns={["Passes"]}
       />
       {selectedRowIndex !== null && selectedRangeField && (
         <RangeEditModal
@@ -380,27 +366,6 @@ export function WeldingDetails() {
                     .mode as DisplayMode),
           }}
           title={selectedRangeField}
-        />
-      )}
-      {isPassesEditOpen && editLayerIndex !== null && (
-        <LayersModal
-          isOpen={isPassesEditOpen}
-          onClose={() => {
-            setIsPassesEditOpen(false);
-            setEditLayerIndex(null);
-          }}
-          singleEdit
-          layers={wpsData.Layers}
-          editIndex={editLayerIndex}
-          onSave={(newPasses) => {
-            const updatedLayer = {
-              ...wpsData.Layers[editLayerIndex],
-              Passes: newPasses,
-            };
-            updateLayer(editLayerIndex, updatedLayer);
-            setIsPassesEditOpen(false);
-            setEditLayerIndex(null);
-          }}
         />
       )}
     </>
