@@ -82,8 +82,8 @@ export interface WPSData {
   SecondParentMaterial: string;
   ParentMaterialThickness: number | null;
   OutsideDiameter: number | null;
-  PreheatTemperature: string;
-  IntermediatePassTemperature: string;
+  PreheatTemperature: number | null;
+  IntermediatePassTemperature: number | null;
   JointDesignImage: string;
   WeldBuildupImage: string;
   Remarks: string;

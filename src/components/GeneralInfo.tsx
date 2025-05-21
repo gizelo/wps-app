@@ -313,7 +313,12 @@ export function GeneralInfo() {
       );
     }
 
-    if (key === "ParentMaterialThickness" || key === "OutsideDiameter") {
+    if (
+      key === "ParentMaterialThickness" ||
+      key === "OutsideDiameter" ||
+      key === "PreheatTemperature" ||
+      key === "IntermediatePassTemperature"
+    ) {
       const value = wpsData[key];
       const displayValue = value === null ? "" : value.toString();
 
