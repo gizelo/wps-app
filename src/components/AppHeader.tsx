@@ -1,79 +1,111 @@
 import { useState } from "react";
-import styled from "styled-components";
-import { useWPS } from "../context/WPSContext";
-import { LayersModal } from "./LayersModal";
-
-const HeaderContainer = styled.header`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 60px;
-  background: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  z-index: 1000;
-`;
-
-const Toolbar = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: center;
-`;
-
-const Button = styled.button`
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  background: #007bff;
-  color: white;
-  cursor: pointer;
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  &:hover {
-    background: #0056b3;
-  }
-`;
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Drawer,
+  Box,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Typography,
+  Collapse,
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import { NAVIGATION } from "../config/navigation";
 
 export function AppHeader() {
-  const { wpsData } = useWPS();
-  const [isLayersModalOpen, setIsLayersModalOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
-  const handleSave = () => {
-    const jsonString = JSON.stringify(wpsData, null, 2);
-    const blob = new Blob([jsonString], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "wps-data.json";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const toggleDrawer = () => {
+    setOpen((prev) => !prev);
   };
+
+  const toggleCategory = (segment: string) => {
+    setExpandedCategories((prev) =>
+      prev.includes(segment)
+        ? prev.filter((item) => item !== segment)
+        : [...prev, segment]
+    );
+  };
+
+  const DrawerList = (
+    <Box sx={{ width: 250, paddingTop: 8 }}>
+      <List>
+        {NAVIGATION.map((item) => (
+          <Box key={item.segment}>
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => toggleCategory(item.segment)}>
+                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemText primary={item.title} />
+                {item.children &&
+                  (expandedCategories.includes(item.segment) ? (
+                    <ExpandLess />
+                  ) : (
+                    <ExpandMore />
+                  ))}
+              </ListItemButton>
+            </ListItem>
+            {item.children && (
+              <Collapse
+                in={expandedCategories.includes(item.segment)}
+                timeout="auto"
+                unmountOnExit
+              >
+                <List component="div" disablePadding>
+                  {item.children.map((child) => (
+                    <ListItem key={child.segment} disablePadding>
+                      <ListItemButton sx={{ pl: 4 }}>
+                        <ListItemText primary={child.title} />
+                      </ListItemButton>
+                    </ListItem>
+                  ))}
+                </List>
+              </Collapse>
+            )}
+          </Box>
+        ))}
+      </List>
+    </Box>
+  );
 
   return (
     <>
-      <HeaderContainer>
+      <AppBar
+        position="fixed"
+        sx={{
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          backgroundColor: "white",
+          color: "black",
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+        }}
+      >
         <Toolbar>
-          <Button onClick={handleSave}>Save JSON</Button>
-          <Button
-            onClick={() => setIsLayersModalOpen(true)}
-            style={{ backgroundColor: "#ededed", color: "black" }}
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="menu"
+            onClick={toggleDrawer}
           >
-            Layers ({wpsData.Layers?.length || 0})
-          </Button>
+            <MenuIcon />
+          </IconButton>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{ flexGrow: 1, marginLeft: 1 }}
+          >
+            WPS Maker
+          </Typography>
         </Toolbar>
-      </HeaderContainer>
-      <LayersModal
-        isOpen={isLayersModalOpen}
-        onClose={() => setIsLayersModalOpen(false)}
-      />
+      </AppBar>
+      <Drawer open={open} onClose={toggleDrawer}>
+        {DrawerList}
+      </Drawer>
+      <Toolbar />
     </>
   );
 }
