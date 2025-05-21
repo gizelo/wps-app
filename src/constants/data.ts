@@ -39,11 +39,11 @@ export const DATA = {
         mode: "Range",
         Parameters: [
           {
-            Name: "ArcLengthCorrection",
+            Name: "Arc Length Correction",
             Value: "+10",
           },
           {
-            Name: "PulseHeightCorrection",
+            Name: "Pulse Height Correction",
             Value: "+6",
           },
         ],

@@ -8,6 +8,7 @@ import { RangeEditModal, DisplayMode } from "../common/RangeEditModal";
 import styled from "styled-components";
 import { StyledSelect } from "../common/StyledSelect";
 import { collections } from "../../constants/collections";
+import { StyledInput } from "../common/StyledInput";
 
 const SelectorButton = styled.div<{ hasValue: boolean }>`
   white-space: nowrap;
@@ -138,7 +139,7 @@ export function WeldingDetails() {
   const handleUpdate = (
     index: number,
     field: string,
-    value: string | string[]
+    value: string | string[] | { paramIdx: number; value: string }
   ) => {
     const layer = wpsData.Layers[index];
     const updatedLayer = { ...layer };
@@ -147,7 +148,7 @@ export function WeldingDetails() {
       case "Positions":
         updatedLayer.Positions = Array.isArray(value)
           ? value.join(", ")
-          : value;
+          : (value as string);
         break;
       case "Pass Type":
         updatedLayer.PassType = value as string;
@@ -157,6 +158,23 @@ export function WeldingDetails() {
         updateLayer(index, updatedLayer);
         return;
       case "Current [A]":
+        setSelectedRowIndex(index);
+        setSelectedRangeField(field);
+        setIsRangeModalOpen(true);
+        return;
+      case "CurrentParameter": {
+        const { paramIdx, value: paramValue } = value as {
+          paramIdx: number;
+          value: string;
+        };
+        const current = layer.Current;
+        const updatedParams = current.Parameters.map((p, i) =>
+          i === paramIdx ? { ...p, Value: paramValue } : p
+        );
+        updatedLayer.Current = { ...current, Parameters: updatedParams };
+        updateLayer(index, updatedLayer);
+        return;
+      }
       case "Voltage [V]":
       case "Wire Feed Speed [m/min]":
       case "Travel Speed [cm/min]":
@@ -187,10 +205,11 @@ export function WeldingDetails() {
       switch (selectedRangeField) {
         case "Current [A]":
           updatedLayer.Current = {
+            ...layer.Current,
             firstValue: values.firstValue,
             secondValue: values.secondValue,
             mode: values.mode,
-            Parameters: [],
+            Parameters: layer.Current.Parameters,
           };
           break;
         case "Voltage [V]":
@@ -271,14 +290,55 @@ export function WeldingDetails() {
         }))}
       />
     ),
-    "Current [A]": (value: string, rowIndex: number) => (
-      <SelectorButton
-        hasValue={!!value}
-        onClick={() => handleUpdate(rowIndex, "Current [A]", value)}
-      >
-        {value}
-      </SelectorButton>
-    ),
+    "Current [A]": (value: string, rowIndex: number) => {
+      const current = wpsData.Layers[rowIndex].Current;
+      return (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: 4,
+          }}
+        >
+          <SelectorButton
+            hasValue={!!value}
+            onClick={() => handleUpdate(rowIndex, "Current [A]", value)}
+          >
+            {value}
+          </SelectorButton>
+          {current.Parameters && current.Parameters.length > 0 && (
+            <div style={{ marginTop: 6, width: "100%" }}>
+              {current.Parameters.map((param, paramIdx) => (
+                <div
+                  key={param.Name}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 4,
+                    gap: 4,
+                  }}
+                >
+                  <span>{param.Name}:</span>
+                  <StyledInput
+                    value={param.Value}
+                    onChange={(newValue) =>
+                      handleUpdate(rowIndex, "CurrentParameter", {
+                        paramIdx,
+                        value: newValue,
+                      })
+                    }
+                    width="50px"
+                    centered
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    },
     "Voltage [V]": (value: string, rowIndex: number) => (
       <SelectorButton
         hasValue={!!value}
