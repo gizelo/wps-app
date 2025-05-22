@@ -298,7 +298,7 @@ export function WeldingDetails() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            padding: 4,
+            padding: current.Parameters.length > 0 ? 4 : 0,
           }}
         >
           <SelectorButton
@@ -329,7 +329,6 @@ export function WeldingDetails() {
                         value: newValue,
                       })
                     }
-                    width="50px"
                     centered
                   />
                 </div>

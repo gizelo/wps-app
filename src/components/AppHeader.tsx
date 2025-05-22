@@ -16,10 +16,12 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import { NAVIGATION } from "../config/navigation";
+import { Link, useNavigate } from "react-router-dom";
 
 export function AppHeader() {
   const [open, setOpen] = useState(false);
   const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   const toggleDrawer = () => {
     setOpen((prev) => !prev);
@@ -31,6 +33,11 @@ export function AppHeader() {
         ? prev.filter((item) => item !== segment)
         : [...prev, segment]
     );
+  };
+
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    setOpen(false);
   };
 
   const DrawerList = (
@@ -59,7 +66,10 @@ export function AppHeader() {
                 <List component="div" disablePadding>
                   {item.children.map((child) => (
                     <ListItem key={child.segment} disablePadding>
-                      <ListItemButton sx={{ pl: 4 }}>
+                      <ListItemButton
+                        sx={{ pl: 4 }}
+                        onClick={() => handleNavigation(`/${child.segment}`)}
+                      >
                         <ListItemText primary={child.title} />
                       </ListItemButton>
                     </ListItem>
@@ -95,8 +105,14 @@ export function AppHeader() {
           </IconButton>
           <Typography
             variant="h6"
-            component="div"
-            sx={{ flexGrow: 1, marginLeft: 1 }}
+            component={Link}
+            to="/"
+            sx={{
+              flexGrow: 1,
+              marginLeft: 1,
+              textDecoration: "none",
+              color: "inherit",
+            }}
           >
             WPS Maker
           </Typography>
