@@ -6,7 +6,7 @@ import { Layer } from "../types";
 import { StyledInput } from "./common/StyledInput";
 import { IconButton } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import DeleteIcon from "@mui/icons-material/Delete";
+import { Clear } from "@mui/icons-material";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -378,7 +378,7 @@ export function LayersModal({
                               },
                             }}
                           >
-                            <DeleteIcon />
+                            <Clear />
                           </IconButton>
                         </ActionButtonsContainer>
                       </Td>
