@@ -5,11 +5,10 @@ export function Home() {
     <Box sx={{ p: 2 }}>
       <Box sx={{ mt: 4, textAlign: "center" }}>
         <Typography variant="h4" gutterBottom>
-          Welcome to WPS Maker
+          WPS Maker 4.0
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Your comprehensive solution for managing Welding Procedure
-          Specifications
+          Weld Quality Assurance Toolkit
         </Typography>
       </Box>
     </Box>

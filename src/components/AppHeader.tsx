@@ -44,7 +44,7 @@ export function AppHeader() {
 
   const getCurrentPageTitle = () => {
     const path = location.pathname.slice(1); // Remove leading slash
-    if (!path) return "WPS Maker";
+    if (!path) return "";
 
     // Find the page title in navigation
     for (const category of NAVIGATION) {
