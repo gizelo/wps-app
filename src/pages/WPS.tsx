@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { Box, Paper } from "@mui/material";
+import { Box } from "@mui/material";
 import { useState } from "react";
 import { Header } from "../components/Header";
 import { GeneralInfo } from "../components/GeneralInfo";
@@ -19,6 +19,7 @@ const Container = styled.div`
   background: white;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   font-size: 10px; /* A4 specific font size */
+  color: black;
 `;
 
 const Section = styled.div`
@@ -35,16 +36,15 @@ export function WPSPage() {
   const [isLayersModalOpen, setIsLayersModalOpen] = useState(false);
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ pb: 2 }}>
       <ActionButtons
         buttons={[
-          { label: "Save JSON", onClick: saveWPSData },
+          { label: "New", disabled: true },
+          { label: "Load", disabled: true },
           {
             label: `Layers (${wpsData.Layers?.length || 0})`,
             onClick: () => setIsLayersModalOpen(true),
           },
-          { label: "New", disabled: true },
-          { label: "Load", disabled: true },
           { label: "Qualify", disabled: true },
           {
             label: "Import",
@@ -52,7 +52,7 @@ export function WPSPage() {
           },
           {
             label: "Export",
-            disabled: true,
+            onClick: saveWPSData,
           },
         ]}
       />
@@ -63,32 +63,30 @@ export function WPSPage() {
           justifyContent: "center",
         }}
       >
-        <Paper sx={{ padding: 2, borderRadius: 2, backgroundColor: "#989898" }}>
-          <Container>
-            <Header />
-            <GeneralInfo />
-            <JointDesign />
-            <Section>
-              <SectionTitle>Details for welding</SectionTitle>
-              <WeldingDetails />
-            </Section>
-            <Section>
-              <SectionTitle>Filler metal</SectionTitle>
-              <FillerMetal />
-            </Section>
-            <Section>
-              <SectionTitle>Shielding gas</SectionTitle>
-              <ShieldingGas />
-            </Section>
-            <Section>
-              <SectionTitle>Further information</SectionTitle>
-              <FurtherInfo />
-            </Section>
-            <Section>
-              <SignaturesTable />
-            </Section>
-          </Container>
-        </Paper>
+        <Container>
+          <Header />
+          <GeneralInfo />
+          <JointDesign />
+          <Section>
+            <SectionTitle>Details for welding</SectionTitle>
+            <WeldingDetails />
+          </Section>
+          <Section>
+            <SectionTitle>Filler metal</SectionTitle>
+            <FillerMetal />
+          </Section>
+          <Section>
+            <SectionTitle>Shielding gas</SectionTitle>
+            <ShieldingGas />
+          </Section>
+          <Section>
+            <SectionTitle>Further information</SectionTitle>
+            <FurtherInfo />
+          </Section>
+          <Section>
+            <SignaturesTable />
+          </Section>
+        </Container>
       </Box>
       <LayersModal
         isOpen={isLayersModalOpen}

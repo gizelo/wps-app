@@ -79,11 +79,12 @@ const Button = styled.button<{ $primary?: boolean }>`
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  background: ${(props) => (props.$primary ? "#007bff" : "#f2f2f2")};
+  background: ${(props) => (props.$primary ? "#ff9600" : "#f2f2f2")};
   color: ${(props) => (props.$primary ? "white" : "inherit")};
+  transition: all 0.2s;
 
   &:hover {
-    background: ${(props) => (props.$primary ? "#0056b3" : "#e6e6e6")};
+    background: ${(props) => (props.$primary ? "#ab6502" : "#e6e6e6")};
   }
 `;
 
@@ -313,7 +314,7 @@ export function RangeEditModal({
               onChange={handleOperatorChange}
               disabled={!firstValue}
             >
-              <option value="">Single Value</option>
+              <option value=""></option>
               <option value="-">-</option>
               <option value="±">±</option>
             </Select>

@@ -101,14 +101,14 @@ const Button = styled.button<{ primary?: boolean; disabled?: boolean }>`
   padding: 8px 16px;
   border-radius: 4px;
   border: 1px solid ${(props) => (props.primary ? "transparent" : "#ccc")};
-  background: ${(props) => (props.primary ? "#007bff" : "white")};
+  background: ${(props) => (props.primary ? "#ff9600" : "white")};
   color: ${(props) => (props.primary ? "white" : "inherit")};
   cursor: pointer;
   opacity: ${(props) => (props.disabled ? 0.5 : 1)};
   pointer-events: ${(props) => (props.disabled ? "none" : "auto")};
-
+  transition: all 0.2s;
   &:hover {
-    background: ${(props) => (props.primary ? "#0056b3" : "#f5f5f5")};
+    background: ${(props) => (props.primary ? "#ab6502" : "#f5f5f5")};
   }
 `;
 

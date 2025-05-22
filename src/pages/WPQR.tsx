@@ -1,9 +1,9 @@
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { ActionButtons } from "../components/ActionButtons";
 
 export function WPQRPage() {
   return (
-    <Box sx={{ p: 2 }}>
+    <Box>
       <ActionButtons
         buttons={[
           { label: "New", disabled: true },
@@ -13,7 +13,6 @@ export function WPQRPage() {
           { label: "Export", disabled: true },
         ]}
       />
-      <Typography variant="h4">WPQR</Typography>
     </Box>
   );
 }

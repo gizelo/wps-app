@@ -1,4 +1,4 @@
-import { Button, Paper } from "@mui/material";
+import { Box, Button } from "@mui/material";
 
 interface ActionButton {
   label: string;
@@ -13,18 +13,16 @@ interface ActionButtonsProps {
 
 export function ActionButtons({ buttons }: ActionButtonsProps) {
   return (
-    <Paper
-      elevation={0}
+    <Box
       sx={{
         mb: 2,
         display: "flex",
         gap: 1,
-        padding: 1,
-        borderRadius: 2,
+        padding: 2,
+        backgroundColor: "background.paper",
         position: "sticky",
-        top: 80,
+        top: 60,
         zIndex: 100,
-        width: "fit-content",
       }}
     >
       {buttons.map((button, index) => (
@@ -33,10 +31,14 @@ export function ActionButtons({ buttons }: ActionButtonsProps) {
           variant={button.variant || "contained"}
           onClick={button.onClick}
           disabled={button.disabled}
+          sx={{
+            textTransform: "none",
+            minWidth: "100px",
+          }}
         >
           {button.label}
         </Button>
       ))}
-    </Paper>
+    </Box>
   );
 }

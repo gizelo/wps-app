@@ -1,9 +1,9 @@
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { ActionButtons } from "../components/ActionButtons";
 
 export function ManufacturersPage() {
   return (
-    <Box sx={{ p: 2 }}>
+    <Box>
       <ActionButtons
         buttons={[
           { label: "New", disabled: true },
@@ -12,7 +12,6 @@ export function ManufacturersPage() {
           { label: "Delete", disabled: true },
         ]}
       />
-      <Typography variant="h4">Manufacturers</Typography>
     </Box>
   );
 }

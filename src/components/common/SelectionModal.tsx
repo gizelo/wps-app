@@ -138,18 +138,19 @@ const Button = styled.button<{ primary?: boolean; disabled?: boolean }>`
   border: 1px solid ${(props) => (props.primary ? "transparent" : "#ccc")};
   background: ${(props) => {
     if (props.disabled) return "#e9ecef";
-    return props.primary ? "#007bff" : "white";
+    return props.primary ? "#ff9600" : "white";
   }};
   color: ${(props) => {
     if (props.disabled) return "#6c757d";
     return props.primary ? "white" : "inherit";
   }};
   cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
+  transition: all 0.2s;
 
   &:hover {
     background: ${(props) => {
       if (props.disabled) return "#e9ecef";
-      return props.primary ? "#0056b3" : "#f5f5f5";
+      return props.primary ? "#ab6502" : "#f5f5f5";
     }};
   }
 `;

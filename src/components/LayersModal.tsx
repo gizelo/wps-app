@@ -1,9 +1,12 @@
 import styled from "styled-components";
+import { useState, useEffect } from "react";
 import { DEFAULT_LAYER } from "../constants/defaultLayer";
 import { useWPS } from "../context/WPSContext";
-import { useEffect, useState } from "react";
 import { Layer } from "../types";
 import { StyledInput } from "./common/StyledInput";
+import { IconButton } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -28,6 +31,7 @@ const ModalContent = styled.div`
   flex-direction: column;
   gap: 24px;
   font-size: 14px;
+  color: black;
 `;
 
 const ModalHeader = styled.div`
@@ -62,16 +66,17 @@ const Td = styled.td`
 const Row = styled.tr``;
 
 const Button = styled.button<{ primary?: boolean }>`
-  background: ${(props) => (props.primary ? "#007bff" : "#f0f0f0")};
+  background: ${(props) => (props.primary ? "#ff9600" : "#f0f0f0")};
   border: none;
   padding: 8px 16px;
   cursor: pointer;
   color: ${(props) => (props.primary ? "white" : "#666")};
   border-radius: 4px;
   font-weight: 600;
+  transition: all 0.2s;
 
   &:hover {
-    background: ${(props) => (props.primary ? "#0056b3" : "#e0e0e0")};
+    background: ${(props) => (props.primary ? "#ab6502" : "#e0e0e0")};
   }
 `;
 
@@ -87,6 +92,12 @@ const ModalFooter = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+`;
+
+const ActionButtonsContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 8px;
 `;
 
 interface LayersModalProps {
@@ -112,19 +123,13 @@ export function LayersModal({
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = "hidden";
       const source =
         singleEdit && layers && typeof editIndex === "number"
           ? [layers[editIndex]]
           : wpsData.Layers || [];
       setLocalLayers(JSON.parse(JSON.stringify(source)));
       setValidationErrors([]);
-    } else {
-      document.body.style.overflow = "";
     }
-    return () => {
-      document.body.style.overflow = "";
-    };
   }, [isOpen]);
 
   useEffect(() => {
@@ -141,8 +146,6 @@ export function LayersModal({
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
 
   const validateLayers = (layersToValidate: Layer[]): string[] => {
     const errors: string[] = [];
@@ -253,6 +256,8 @@ export function LayersModal({
   };
 
   const handleDeleteLayer = (index: number) => {
+    if (localLayers.length <= 1) return; // Prevent removing the last layer
+
     setLocalLayers((prevLayers) => {
       const newLayers = prevLayers.filter((_, i) => i !== index);
 
@@ -277,27 +282,7 @@ export function LayersModal({
     });
   };
 
-  const moveLayerUp = (index: number) => {
-    if (index <= 0) return;
-    setLocalLayers((prev) => {
-      const updated = [...prev];
-      const temp = updated[index - 1];
-      updated[index - 1] = updated[index];
-      updated[index] = temp;
-      return updated;
-    });
-  };
-
-  const moveLayerDown = (index: number) => {
-    if (index >= localLayers.length - 1) return;
-    setLocalLayers((prev) => {
-      const updated = [...prev];
-      const temp = updated[index + 1];
-      updated[index + 1] = updated[index];
-      updated[index] = temp;
-      return updated;
-    });
-  };
+  if (!isOpen) return null;
 
   return (
     <ModalOverlay onClick={onClose}>
@@ -315,8 +300,8 @@ export function LayersModal({
                 Passes
               </Th>
               {!singleEdit && (
-                <Th colSpan={4} rowSpan={2} style={{ textAlign: "center" }}>
-                  Actions
+                <Th colSpan={2} rowSpan={2} style={{ textAlign: "center" }}>
+                  Action
                 </Th>
               )}
             </tr>
@@ -365,45 +350,37 @@ export function LayersModal({
                       />
                     </Td>
                     {!singleEdit && (
-                      <Td
-                        style={{
-                          textAlign: "center",
-                          color: "#007bff",
-                          cursor: "pointer",
-                          fontWeight: 700,
-                        }}
-                        onClick={() => handleAddLayer(idx)}
-                      >
-                        +
-                      </Td>
-                    )}
-                    {!singleEdit && (
-                      <Td
-                        style={{
-                          textAlign: "center",
-                          color: "#dc3545",
-                          cursor: "pointer",
-                          fontWeight: 700,
-                        }}
-                        onClick={() => handleDeleteLayer(idx)}
-                      >
-                        ×
-                      </Td>
-                    )}
-                    {!singleEdit && (
-                      <Td
-                        style={{ textAlign: "center", cursor: "pointer" }}
-                        onClick={() => moveLayerUp(idx)}
-                      >
-                        ↑
-                      </Td>
-                    )}
-                    {!singleEdit && (
-                      <Td
-                        style={{ textAlign: "center", cursor: "pointer" }}
-                        onClick={() => moveLayerDown(idx)}
-                      >
-                        ↓
+                      <Td style={{ textAlign: "center" }}>
+                        <ActionButtonsContainer>
+                          <IconButton
+                            onClick={() => handleAddLayer(idx)}
+                            sx={{
+                              color: "#007bff",
+                              "&:hover": {
+                                backgroundColor: "rgba(0, 123, 255, 0.1)",
+                              },
+                              transition: "all 0.2s",
+                            }}
+                          >
+                            <AddIcon />
+                          </IconButton>
+                          <IconButton
+                            onClick={() => handleDeleteLayer(idx)}
+                            disabled={localLayers.length <= 1}
+                            sx={{
+                              color: "#dc3545",
+                              "&:hover": {
+                                backgroundColor: "rgba(220, 53, 69, 0.1)",
+                              },
+                              transition: "all 0.2s",
+                              "&.Mui-disabled": {
+                                color: "#ccc",
+                              },
+                            }}
+                          >
+                            <DeleteIcon />
+                          </IconButton>
+                        </ActionButtonsContainer>
                       </Td>
                     )}
                   </Row>

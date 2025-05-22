@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ThemeProvider, CssBaseline } from "@mui/material";
 import { WPSProvider } from "./context/WPSContext";
 import { AppHeader } from "./components/AppHeader";
 import { Home } from "./pages/Home";
@@ -15,6 +16,7 @@ import { WireFeedersPage } from "./pages/WireFeeders";
 import { GasSensorsPage } from "./pages/GasSensors";
 import { GeneralSettingsPage } from "./pages/GeneralSettings";
 import { DevelopmentSettingsPage } from "./pages/DevelopmentSettings";
+import { theme } from "./theme";
 
 function AppContent() {
   return (
@@ -42,11 +44,14 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <WPSProvider>
-        <AppContent />
-      </WPSProvider>
-    </Router>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Router>
+        <WPSProvider>
+          <AppContent />
+        </WPSProvider>
+      </Router>
+    </ThemeProvider>
   );
 }
 

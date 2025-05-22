@@ -1,9 +1,9 @@
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 import { ActionButtons } from "../components/ActionButtons";
 
 export function FillerMetalsPage() {
   return (
-    <Box sx={{ p: 2 }}>
+    <Box>
       <ActionButtons
         buttons={[
           { label: "New", disabled: true },
@@ -14,7 +14,6 @@ export function FillerMetalsPage() {
           { label: "Export", disabled: true },
         ]}
       />
-      <Typography variant="h4">Filler Metals</Typography>
     </Box>
   );
 }
